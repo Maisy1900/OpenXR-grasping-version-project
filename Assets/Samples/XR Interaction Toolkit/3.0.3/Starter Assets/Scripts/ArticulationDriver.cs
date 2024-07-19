@@ -58,7 +58,7 @@ public class ArticulationDriver : MonoBehaviour
             maxAngles[i] = float.MinValue;
         }
 
-        //StartCoroutine(WaitBeforeMeasurement());
+        StartCoroutine(WaitBeforeMeasurement());
     }
 
     void FixedUpdate()
@@ -140,7 +140,7 @@ public class ArticulationDriver : MonoBehaviour
         // *******************************************************************************************
         // *******************************************************************************************
         // *******************************************************************************************
-
+        /*
         #region Finger movement
         // Index finger  
         RotateTo(articulationBods[0], 50f, 15f, 0f);
@@ -164,6 +164,7 @@ public class ArticulationDriver : MonoBehaviour
         RotateTo(articulationBods[13], 50f, 15f, 0f);
         RotateTo(articulationBods[14], 50f, 15f, 0f);
         #endregion
+        */
 
         /*
         #region Finger and thumb 
@@ -289,7 +290,7 @@ public class ArticulationDriver : MonoBehaviour
             }
 
         }
-        #endregion
+        */
         for (int i = 0; i < driverJoints.Length; i++)
         {
             float currentAngle = driverJoints[i].localRotation.eulerAngles.z;
@@ -309,7 +310,7 @@ public class ArticulationDriver : MonoBehaviour
             minAnglesRecorded = true;
             Debug.Log("Minimum angles recorded.");
         }
-        */
+        
     }
 
     // 3 versions of the RotateTo functions (overloaded) 
@@ -425,7 +426,7 @@ public class ArticulationDriver : MonoBehaviour
             float currentAngle = driverJoints[i].localRotation.eulerAngles.z;
             maxAngles[i] = Mathf.Max(maxAngles[i], currentAngle);
         }
-        SaveAngles("max_angles.csv", maxAngles);
+        SaveAngles("max_angles4.csv", maxAngles);
     }
 
     void RecordMinAngles()
@@ -435,7 +436,7 @@ public class ArticulationDriver : MonoBehaviour
             float currentAngle = driverJoints[i].localRotation.eulerAngles.z;
             minAngles[i] = Mathf.Min(minAngles[i], currentAngle);
         }
-        SaveAngles("min_angles.csv", minAngles);
+        SaveAngles("min_angles4.csv", minAngles);
     }
 
     void SaveAngles(string fileName, float[] angles)
@@ -443,10 +444,10 @@ public class ArticulationDriver : MonoBehaviour
         using (StreamWriter writer = new StreamWriter(fileName))
         {
             writer.WriteLine("Joint,Angle");
-            //for (int i = 0; i < driverJoints.Length; i++)
-           // {
-           //     writer.WriteLine($"{driverJoints[i].name},{angles[i]}");
-            //}
+            for (int i = 0; i < driverJoints.Length; i++)
+            {
+                writer.WriteLine($"{driverJoints[i].name},{angles[i]}");
+            }
         }
         Debug.Log($"Angles saved to {fileName}");
     }
