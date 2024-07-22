@@ -31,9 +31,7 @@ public class ArticulationDriver : MonoBehaviour
     public CapsuleCollider[] _capsuleColliders;
     public BoxCollider[] _palmColliders;
     public Text infoText;
-    public Text angleDisplayText; 
-    private float[] minAngles;
-    private float[] maxAngles;
+    public Text angleDisplayText;
 
 
     ArticulationBody thisArticulation; // Root-Parent articulation body 
@@ -41,24 +39,10 @@ public class ArticulationDriver : MonoBehaviour
 
     [Range(-90f, 90f)]
     public float angle = 0f;
-    private bool countdownStarted = false;
-    private bool maxAnglesRecorded = false;
-    private bool minAnglesRecorded = false;
 
     void Start()
     {
-        Debug.Log("ArticulationDriver script has started.");
         thisArticulation = GetComponent<ArticulationBody>();
-        minAngles = new float[driverJoints.Length];
-        maxAngles = new float[driverJoints.Length];
-
-        for (int i = 0; i < driverJoints.Length; i++)
-        {
-            minAngles[i] = float.MaxValue;
-            maxAngles[i] = float.MinValue;
-        }
-
-        StartCoroutine(WaitBeforeMeasurement());
     }
 
     void FixedUpdate()
@@ -140,12 +124,65 @@ public class ArticulationDriver : MonoBehaviour
         // *******************************************************************************************
         // *******************************************************************************************
         // *******************************************************************************************
-        /*
+
         #region Finger movement
+
         // Index finger  
-        RotateTo(articulationBods[0], 50f, 15f, 0f);
-        RotateTo(articulationBods[1], 50f, 15f, 0f);
-        RotateTo(articulationBods[2], 50f, 15f, 0f);
+        
+        float ang_targX = 0f;
+        float tempAng = 0f;
+        float tempAngY = 0f;
+        float ang_targY = 0f;
+        /*
+        if (articulationBods[0]) // R_IndexProximal
+        {
+            tempAng = NormalizeAngle(driverJoints[0].transform.localRotation.eulerAngles.z);
+            ang_targX = MapAngle(tempAng, 2.774716f, 22.92734f, -10.6921f, 76.78067f);
+
+            tempAngY = NormalizeAngle(driverJoints[0].transform.localRotation.eulerAngles.x);
+            ang_targY = MapAngle(tempAngY, 349.3079f, 76.78067f, 76.78067f, 76.78067f); // Verify the mapping
+
+            RotateTo(articulationBods[0], ang_targX, ang_targY);
+            infoText.text = "Angles: " + tempAngY.ToString("F2");
+        }
+        */
+        if (articulationBods[1]) // R_IndexIntermediate
+        {
+           tempAng = NormalizeAngle(driverJoints[1].transform.localRotation.eulerAngles.z);
+           ang_targX = MapAngle(tempAng, 356.9656f, 356.9691f, 15.05899f, 15.65378f);
+
+            //tempAngY = NormalizeAngle(driverJoints[1].transform.localRotation.eulerAngles.x);
+            //ang_targY = MapAngle(tempAngY, 15.05899f, 15.65378f, 15.65378f, 15.65378f);
+
+            Debug.Log("Intermediate tempAng: " + tempAng + ", ang_targX: " + ang_targX);
+            Debug.Log("Intermediate tempAngY: " + tempAngY + ", ang_targY: " + ang_targY);
+
+            RotateTo(articulationBods[1], ang_targX, ang_targY);
+            infoText.text = "Angles: " + tempAngY.ToString("F2");
+        }
+        /*
+        if (articulationBods[2]) // R_IndexDistal
+        {
+            // Get the Z-axis rotation angle of the third driver joint and normalize it
+            tempAng = NormalizeAngle(driverJoints[2].transform.localRotation.eulerAngles.z);
+            // Map the Z-axis rotation angle to a new range for target X angle
+            ang_targX = MapAngle(tempAng, 358.0546f, 358.2885f, -2.7183f, 61.23251f);
+
+            // Get the X-axis rotation angle of the third driver joint and normalize it
+            tempAngY = NormalizeAngle(driverJoints[2].transform.localRotation.eulerAngles.x);
+            // Map the X-axis rotation angle to a new range for target Y angle
+            ang_targY = MapAngle(tempAngY, 357.2817f, 61.23251f, 61.23251f, 61.23251f);
+
+            // Rotate the third articulation body to the target angles
+            RotateTo(articulationBods[2], ang_targX, ang_targY);
+
+            // Update the infoText with the current Y angle formatted to two decimal places
+            //infoText.text = "Angles: " + tempAngY.ToString("F2");
+        }
+        */
+        // RotateTo(articulationBods[0], 50f, 15f, 0f);
+        // RotateTo(articulationBods[1], 50f, 15f, 0f);
+        // RotateTo(articulationBods[2], 50f, 15f, 0f);
 
         // Middle Finger 
         RotateTo(articulationBods[3], 50f, 15f, 0f);
@@ -164,7 +201,7 @@ public class ArticulationDriver : MonoBehaviour
         RotateTo(articulationBods[13], 50f, 15f, 0f);
         RotateTo(articulationBods[14], 50f, 15f, 0f);
         #endregion
-        */
+        
 
         /*
         #region Finger and thumb 
@@ -291,26 +328,14 @@ public class ArticulationDriver : MonoBehaviour
 
         }
         */
+        /*
         for (int i = 0; i < driverJoints.Length; i++)
         {
             float currentAngle = driverJoints[i].localRotation.eulerAngles.z;
             minAngles[i] = Mathf.Min(minAngles[i], currentAngle);
             maxAngles[i] = Mathf.Max(maxAngles[i], currentAngle);
         }
-        if (countdownStarted && !maxAnglesRecorded)
-        {
-            RecordMaxAngles();
-            maxAnglesRecorded = true;
-            Debug.Log("Maximum angles recorded.");
-        }
-
-        if (countdownStarted && !minAnglesRecorded)
-        {
-            RecordMinAngles();
-            minAnglesRecorded = true;
-            Debug.Log("Minimum angles recorded.");
-        }
-        
+        */
     }
 
     // 3 versions of the RotateTo functions (overloaded) 
@@ -418,53 +443,28 @@ public class ArticulationDriver : MonoBehaviour
     {
         return rightMin + (value - leftMin) * (rightMax - rightMin) / (leftMax - leftMin);
     }
-
-    void RecordMaxAngles()
+    float ClampAngle(float angle, float min, float max)
     {
-        for (int i = 0; i < driverJoints.Length; i++)
-        {
-            float currentAngle = driverJoints[i].localRotation.eulerAngles.z;
-            maxAngles[i] = Mathf.Max(maxAngles[i], currentAngle);
-        }
-        SaveAngles("max_angles4.csv", maxAngles);
+        if (angle < -360F) angle += 360F;
+        if (angle > 360F) angle -= 360F;
+        return Mathf.Clamp(angle, min, max);
     }
 
-    void RecordMinAngles()
+    public static float NormalizeAngle(float angle)
     {
-        for (int i = 0; i < driverJoints.Length; i++)
-        {
-            float currentAngle = driverJoints[i].localRotation.eulerAngles.z;
-            minAngles[i] = Mathf.Min(minAngles[i], currentAngle);
-        }
-        SaveAngles("min_angles4.csv", minAngles);
+        angle = angle % 360;
+        if (angle < 0) angle += 360;
+        return angle;
     }
-
-    void SaveAngles(string fileName, float[] angles)
+    public static float MapAngle(float value, float leftMin, float leftMax, float rightMin, float rightMax)
     {
-        using (StreamWriter writer = new StreamWriter(fileName))
-        {
-            writer.WriteLine("Joint,Angle");
-            for (int i = 0; i < driverJoints.Length; i++)
-            {
-                writer.WriteLine($"{driverJoints[i].name},{angles[i]}");
-            }
-        }
-        Debug.Log($"Angles saved to {fileName}");
-    }
+        // Normalize the input value to the 0-360 range
+        value = NormalizeAngle(value);
+        leftMin = NormalizeAngle(leftMin);
+        leftMax = NormalizeAngle(leftMax);
 
-    IEnumerator WaitBeforeMeasurement()
-    {
-        yield return new WaitForSeconds(30f); // Wait for 30 seconds before starting the countdown
-        Debug.Log("Spread your fingers wide.");
-        yield return new WaitForSeconds(10f); // Wait for 10 seconds for the user to spread their fingers
-        Debug.Log("Recording maximum angles.");
-        countdownStarted = true;
-        yield return new WaitForSeconds(10f); // Wait for 10 seconds before the next instruction
-        Debug.Log("Make a fist.");
-        yield return new WaitForSeconds(10f); // Wait for 10 seconds for the user to make a fist
-        Debug.Log("Recording minimum angles.");
-        countdownStarted = true;
-        Debug.Log("Measurement complete. Angles recorded and saved to max_angles.csv and min_angles.csv.");
+        // Perform the mapping
+        return rightMin + (value - leftMin) * (rightMax - rightMin) / (leftMax - leftMin);
     }
 
 }
