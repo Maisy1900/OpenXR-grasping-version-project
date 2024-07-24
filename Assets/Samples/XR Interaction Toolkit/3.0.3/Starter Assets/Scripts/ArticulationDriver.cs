@@ -446,29 +446,15 @@ public class ArticulationDriver : MonoBehaviour
     {
         return rightMin + (value - leftMin) * (rightMax - rightMin) / (leftMax - leftMin);
     }
-    float ClampAngle(float angle, float min, float max)
-    {
-        if (angle < -360F) angle += 360F;
-        if (angle > 360F) angle -= 360F;
-        return Mathf.Clamp(angle, min, max);
-    }
-/*
-    public static float NormalizeAngle(float angle)
-    {
-        angle = angle % 360;
-        if (angle < 0) angle += 360;
-        return angle;
-    }
-  */
+
     public static float MapAngle(float value, float leftMin, float leftMax, float rightMin, float rightMax)
     {
-        // Normalize the input value to the 0-360 range
-        //value = NormalizeAngle(value);
-      //  leftMin = NormalizeAngle(leftMin);
-        //leftMax = NormalizeAngle(leftMax);
-
         // Perform the mapping
         return rightMin + (value - leftMin) * (rightMax - rightMin) / (leftMax - leftMin);
     }
-
+    /*if the min/max angles are far apart then restrict between larger number to smaller number
+     * eg
+     * if the min angle is 355 and max is 10 then restrict monvement between 355 to 10 degrees and restrict movement between 10 and 355
+     * 
+     */
 }
