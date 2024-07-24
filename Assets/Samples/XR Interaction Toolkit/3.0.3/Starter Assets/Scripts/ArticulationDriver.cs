@@ -133,26 +133,29 @@ public class ArticulationDriver : MonoBehaviour
         float tempAng = 0f;
         float tempAngY = 0f;
         float ang_targY = 0f;
-        /*
+       
         if (articulationBods[0]) // R_IndexProximal
         {
-            tempAng = NormalizeAngle(driverJoints[0].transform.localRotation.eulerAngles.z);
+            // tempAng = NormalizeAngle(driverJoints[0].transform.localRotation.eulerAngles.z);
+            tempAng = driverJoints[0].transform.localRotation.eulerAngles.z;
             ang_targX = MapAngle(tempAng, 2.774716f, 22.92734f, -10.6921f, 76.78067f);
 
-            tempAngY = NormalizeAngle(driverJoints[0].transform.localRotation.eulerAngles.x);
+            // tempAngY = NormalizeAngle(driverJoints[0].transform.localRotation.eulerAngles.x);
+            tempAngY = driverJoints[0].transform.localRotation.eulerAngles.x;
             ang_targY = MapAngle(tempAngY, 349.3079f, 76.78067f, 76.78067f, 76.78067f); // Verify the mapping
 
             RotateTo(articulationBods[0], ang_targX, ang_targY);
             infoText.text = "Angles: " + tempAngY.ToString("F2");
         }
-        */
+       
         if (articulationBods[1]) // R_IndexIntermediate
         {
-           tempAng = NormalizeAngle(driverJoints[1].transform.localRotation.eulerAngles.z);
-           ang_targX = MapAngle(tempAng, 356.9656f, 356.9691f, 15.05899f, 15.65378f);
+           //tempAng = driverJoints[1].transform.localRotation.eulerAngles.z;
+            tempAng = driverJoints[0].transform.localRotation.eulerAngles.z;
+            ang_targX = MapAngle(tempAng, 356.9656f, 356.9691f, 15.05899f, 15.65378f);
 
-            //tempAngY = NormalizeAngle(driverJoints[1].transform.localRotation.eulerAngles.x);
-            //ang_targY = MapAngle(tempAngY, 15.05899f, 15.65378f, 15.65378f, 15.65378f);
+            tempAngY = driverJoints[1].transform.localRotation.eulerAngles.x;
+            ang_targY = MapAngle(tempAngY, 15.05899f, 15.65378f, 15.65378f, 15.65378f);
 
             Debug.Log("Intermediate tempAng: " + tempAng + ", ang_targX: " + ang_targX);
             Debug.Log("Intermediate tempAngY: " + tempAngY + ", ang_targY: " + ang_targY);
@@ -160,16 +163,16 @@ public class ArticulationDriver : MonoBehaviour
             RotateTo(articulationBods[1], ang_targX, ang_targY);
             infoText.text = "Angles: " + tempAngY.ToString("F2");
         }
-        /*
+        
         if (articulationBods[2]) // R_IndexDistal
         {
             // Get the Z-axis rotation angle of the third driver joint and normalize it
-            tempAng = NormalizeAngle(driverJoints[2].transform.localRotation.eulerAngles.z);
+            tempAng = driverJoints[2].transform.localRotation.eulerAngles.z;
             // Map the Z-axis rotation angle to a new range for target X angle
             ang_targX = MapAngle(tempAng, 358.0546f, 358.2885f, -2.7183f, 61.23251f);
 
             // Get the X-axis rotation angle of the third driver joint and normalize it
-            tempAngY = NormalizeAngle(driverJoints[2].transform.localRotation.eulerAngles.x);
+            tempAngY = driverJoints[2].transform.localRotation.eulerAngles.x;
             // Map the X-axis rotation angle to a new range for target Y angle
             ang_targY = MapAngle(tempAngY, 357.2817f, 61.23251f, 61.23251f, 61.23251f);
 
@@ -179,7 +182,7 @@ public class ArticulationDriver : MonoBehaviour
             // Update the infoText with the current Y angle formatted to two decimal places
             //infoText.text = "Angles: " + tempAngY.ToString("F2");
         }
-        */
+        
         // RotateTo(articulationBods[0], 50f, 15f, 0f);
         // RotateTo(articulationBods[1], 50f, 15f, 0f);
         // RotateTo(articulationBods[2], 50f, 15f, 0f);
@@ -351,7 +354,7 @@ public class ArticulationDriver : MonoBehaviour
             target = targetTor
         };
     }
-
+    //fingers rotateTo function
     void RotateTo(ArticulationBody body, float targetTorX, float targetTorY)
     {
         body.xDrive = new ArticulationDrive()
@@ -449,19 +452,20 @@ public class ArticulationDriver : MonoBehaviour
         if (angle > 360F) angle -= 360F;
         return Mathf.Clamp(angle, min, max);
     }
-
+/*
     public static float NormalizeAngle(float angle)
     {
         angle = angle % 360;
         if (angle < 0) angle += 360;
         return angle;
     }
+  */
     public static float MapAngle(float value, float leftMin, float leftMax, float rightMin, float rightMax)
     {
         // Normalize the input value to the 0-360 range
-        value = NormalizeAngle(value);
-        leftMin = NormalizeAngle(leftMin);
-        leftMax = NormalizeAngle(leftMax);
+        //value = NormalizeAngle(value);
+      //  leftMin = NormalizeAngle(leftMin);
+        //leftMax = NormalizeAngle(leftMax);
 
         // Perform the mapping
         return rightMin + (value - leftMin) * (rightMax - rightMin) / (leftMax - leftMin);
