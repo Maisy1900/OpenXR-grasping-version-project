@@ -135,11 +135,12 @@ public class ArticulationDriver : MonoBehaviour
             int k = 0; 
             foreach(Transform jointTF in driverJoints)
             {
-                initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x + 12f;
-                initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
-                initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
+                initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x+12f;
+                initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y+6f;
+                initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z+12f;
                 k++;
             }
+            initialXAngles[5] = driverJoints[5].transform.localRotation.eulerAngles.x;
         }
 
         for (int i = 0; i < driverJoints.Length; i++)
@@ -152,18 +153,23 @@ public class ArticulationDriver : MonoBehaviour
             float ang_targYProx = CalculateBendingAngle(initialYAngles[i], tempAngYProx);
             float ang_targZProx = CalculateBendingAngle(initialZAngles[i], tempAngZProx);
            // RotateTo(articulationBods[i], ang_targXProx, ang_targYProx, ang_targZProx);
-            if (driverJoints[i].name.Contains("xyrotations")) {
-                RotateTo(articulationBods[i], ang_targXProx, ang_targYProx);
-            }
-            else if (driverJoints[i].name.Contains("xrotations")) {
-                RotateTo(articulationBods[i], ang_targXProx);
-            }
-            else if (driverJoints[i].name.Contains("xyzrotations"))
-            {
-                RotateTo(articulationBods[i], ang_targXProx, ang_targYProx, ang_targZProx);
-            }
-        }
 
+           if (articulationBods[i].name.Contains("xyrotations")) {
+                RotateTo(articulationBods[i], ang_targXProx, ang_targYProx);
+                ang_targZProx = 0;
+            }
+            else if (articulationBods[i].name.Contains("xrotations")) {
+                RotateTo(articulationBods[i], ang_targXProx);
+                ang_targYProx = 0f;
+                ang_targZProx = 0f;
+                Debug.Log("angle" + ang_targXProx);
+
+            }
+
+            RotateTo(articulationBods[i], ang_targXProx, ang_targYProx, ang_targZProx);
+        }
+        #endregion
+        #region anoyingcode 
         //if (articulationBods[0]) // R_IndexProximal
         //{
         //    float tempAngXProx = driverJoints[0].transform.localRotation.eulerAngles.x;
@@ -257,7 +263,7 @@ public class ArticulationDriver : MonoBehaviour
         //RotateTo(articulationBods[12], 50f, 15f, 0f);
         //RotateTo(articulationBods[13], 50f, 15f, 0f);
         //RotateTo(articulationBods[14], 50f, 15f, 0f);
-        #endregion
+
 
 
         /*
@@ -393,7 +399,7 @@ public class ArticulationDriver : MonoBehaviour
             maxAngles[i] = Mathf.Max(maxAngles[i], currentAngle);
         }
         */
-
+        #endregion
     }
 
     float NormalizeAngle(float angle)
