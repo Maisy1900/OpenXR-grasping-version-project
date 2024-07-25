@@ -308,4 +308,5 @@ public class ArticulationDriver : MonoBehaviour
     {
         return rightMin + (value - leftMin) * (rightMax - rightMin) / (leftMax - leftMin);
     }
+
 }

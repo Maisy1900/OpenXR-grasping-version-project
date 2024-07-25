@@ -23,6 +23,9 @@ TagManager:
   - b_l_pinky1
   - Hand
   - targetHand
+  - xyrotations
+  - xyzrotations
+  - xrotations
   layers:
   - Default
   - TransparentFX

@@ -45,6 +45,10 @@ public class ArticulationDriver : MonoBehaviour
         thisArticulation = GetComponent<ArticulationBody>();
     }
 
+    float[] initialXAngles = new float[20];
+    float[] initialYAngles = new float[20];
+    float[] initialZAngles = new float[20];
+
     void FixedUpdate()
     {
         # region Wrist movement 
@@ -126,85 +130,135 @@ public class ArticulationDriver : MonoBehaviour
         // *******************************************************************************************
 
         #region Finger movement
+        if(Input.GetKeyDown(KeyCode.M)) // Measure initial angles of each driver joint and use it later
+        {
+            int k = 0; 
+            foreach(Transform jointTF in driverJoints)
+            {
+                initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x + 12f;
+                initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
+                initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
+                k++;
+            }
+        }
 
-        // Index finger  
-        
-        float ang_targX = 0f;
-        float tempAng = 0f;
-        float tempAngY = 0f;
-        float ang_targY = 0f;
-       
-        if (articulationBods[0]) // R_IndexProximal
+        for (int i = 0; i < driverJoints.Length; i++)
+        {
+            float tempAngXProx = driverJoints[i].transform.localRotation.eulerAngles.x;
+            float tempAngYProx = driverJoints[i].transform.localRotation.eulerAngles.y;
+            float tempAngZProx = driverJoints[i].transform.localRotation.eulerAngles.z;
+
+            float ang_targXProx = CalculateBendingAngle(initialXAngles[i], tempAngXProx);
+            float ang_targYProx = CalculateBendingAngle(initialYAngles[i], tempAngYProx);
+            float ang_targZProx = CalculateBendingAngle(initialZAngles[i], tempAngZProx);
+           // RotateTo(articulationBods[i], ang_targXProx, ang_targYProx, ang_targZProx);
+            if (driverJoints[i].name.Contains("xyrotations")) {
+                RotateTo(articulationBods[i], ang_targXProx, ang_targYProx);
+            }
+            else if (driverJoints[i].name.Contains("xrotations")) {
+                RotateTo(articulationBods[i], ang_targXProx);
+            }
+            else if (driverJoints[i].name.Contains("xyzrotations"))
+            {
+                RotateTo(articulationBods[i], ang_targXProx, ang_targYProx, ang_targZProx);
+            }
+        }
+
+        //if (articulationBods[0]) // R_IndexProximal
+        //{
+        //    float tempAngXProx = driverJoints[0].transform.localRotation.eulerAngles.x;
+        //    float tempAngYProx = driverJoints[0].transform.localRotation.eulerAngles.y;
+        //    float ang_targXProx = CalculateBendingAngle(initialXAngles[0], tempAngXProx);
+        //    float ang_targYProx = CalculateBendingAngle(initialYAngles[0], tempAngYProx);
+        //    RotateTo(articulationBods[0], ang_targXProx, ang_targYProx);
+        //}
+        //if (articulationBods[1]) // R_IndexIntermediate
+        //{
+        //    float tempAngMid = driverJoints[1].transform.localRotation.eulerAngles.x;
+        //    float ang_targXMid = CalculateBendingAngle(initialYAngles[1], tempAngMid);
+        //    RotateTo(articulationBods[1], tempAngMid);
+        //}
+        //if (articulationBods[2]) // R_IndexDistal
+        //{
+        //    float tempAngDist = driverJoints[2].transform.localRotation.eulerAngles.x;
+        //    float ang_targXDist = CalculateBendingAngle(initialYAngles[2], tempAngDist);
+        //    RotateTo(articulationBods[2], ang_targXDist);
+        //}
+
+        //RotateTo(articulationBods[0], 50f, 15f, 0f);
+        //RotateTo(articulationBods[1], 50f, 15f, 0f);
+        // RotateTo(articulationBods[2], 50f, 15f, 0f);
+        /*
+        // Middle Finger 
+        if (articulationBods[3]) // R_IndexProximal
         {
             // tempAng = NormalizeAngle(driverJoints[0].transform.localRotation.eulerAngles.z);
-            tempAng = driverJoints[0].transform.localRotation.eulerAngles.z;
-            ang_targX = MapAngle(tempAng, 2.774716f, 22.92734f, -10.6921f, 76.78067f);
+            tempAng = driverJoints[3].transform.localRotation.eulerAngles.z;
+            if (tempAng < 100f) { xTargetAngle = tempAng + 360f; }
+            else { xTargetAngle = tempAng; }
+            ang_targX = MapAngle(tempAng, 359.4701f, 358.9762f, -10f, 85f);
 
             // tempAngY = NormalizeAngle(driverJoints[0].transform.localRotation.eulerAngles.x);
-            tempAngY = driverJoints[0].transform.localRotation.eulerAngles.x;
-            ang_targY = MapAngle(tempAngY, 349.3079f, 76.78067f, 76.78067f, 76.78067f); // Verify the mapping
+            tempAngY = driverJoints[3].transform.localRotation.eulerAngles.x;
+            ang_targY = MapAngle(tempAngY, 349.5989f, 83.38909f, 0f, 10f); // Verify the mapping
 
-            RotateTo(articulationBods[0], ang_targX, ang_targY);
+            // RotateTo(articulationBods[0], ang_targX, ang_targY);
             infoText.text = "Angles: " + tempAngY.ToString("F2");
         }
-       
-        if (articulationBods[1]) // R_IndexIntermediate
+        */
+        /*
+        if (articulationBods[4]) // R_IndexIntermediate
         {
-           //tempAng = driverJoints[1].transform.localRotation.eulerAngles.z;
-            tempAng = driverJoints[0].transform.localRotation.eulerAngles.z;
+            //tempAng = driverJoints[1].transform.localRotation.eulerAngles.z;
+            tempAng = driverJoints[4].transform.localRotation.eulerAngles.z;
             ang_targX = MapAngle(tempAng, 356.9656f, 356.9691f, 15.05899f, 15.65378f);
 
-            tempAngY = driverJoints[1].transform.localRotation.eulerAngles.x;
+            tempAngY = driverJoints[4].transform.localRotation.eulerAngles.x;
             ang_targY = MapAngle(tempAngY, 15.05899f, 15.65378f, 15.65378f, 15.65378f);
 
             Debug.Log("Intermediate tempAng: " + tempAng + ", ang_targX: " + ang_targX);
             Debug.Log("Intermediate tempAngY: " + tempAngY + ", ang_targY: " + ang_targY);
 
-            RotateTo(articulationBods[1], ang_targX, ang_targY);
+            RotateTo(articulationBods[4], ang_targX, ang_targY);
             infoText.text = "Angles: " + tempAngY.ToString("F2");
         }
-        
-        if (articulationBods[2]) // R_IndexDistal
+
+        if (articulationBods[5]) // R_IndexDistal
         {
             // Get the Z-axis rotation angle of the third driver joint and normalize it
-            tempAng = driverJoints[2].transform.localRotation.eulerAngles.z;
+            tempAng = driverJoints[5].transform.localRotation.eulerAngles.z;
             // Map the Z-axis rotation angle to a new range for target X angle
             ang_targX = MapAngle(tempAng, 358.0546f, 358.2885f, -2.7183f, 61.23251f);
 
             // Get the X-axis rotation angle of the third driver joint and normalize it
-            tempAngY = driverJoints[2].transform.localRotation.eulerAngles.x;
+            tempAngY = driverJoints[5].transform.localRotation.eulerAngles.x;
             // Map the X-axis rotation angle to a new range for target Y angle
             ang_targY = MapAngle(tempAngY, 357.2817f, 61.23251f, 61.23251f, 61.23251f);
 
             // Rotate the third articulation body to the target angles
-            RotateTo(articulationBods[2], ang_targX, ang_targY);
+            RotateTo(articulationBods[5], ang_targX, ang_targY);
 
             // Update the infoText with the current Y angle formatted to two decimal places
             //infoText.text = "Angles: " + tempAngY.ToString("F2");
         }
-        
-        // RotateTo(articulationBods[0], 50f, 15f, 0f);
-        // RotateTo(articulationBods[1], 50f, 15f, 0f);
-        // RotateTo(articulationBods[2], 50f, 15f, 0f);
-
-        // Middle Finger 
-        RotateTo(articulationBods[3], 50f, 15f, 0f);
-        RotateTo(articulationBods[4], 50f, 15f, 0f);
-        RotateTo(articulationBods[5], 50f, 15f, 0f);
-        //Little Finger
-        RotateTo(articulationBods[6], 50f, 15f, 0f);
-        RotateTo(articulationBods[7], 50f, 15f, 0f);
-        RotateTo(articulationBods[8], 50f, 15f, 0f);
-        //Ring Finger
-        RotateTo(articulationBods[9], 50f, 15f, 0f);
-        RotateTo(articulationBods[10], 50f, 15f, 0f);
-        RotateTo(articulationBods[11], 50f, 15f, 0f);
-        //Thumb
-        RotateTo(articulationBods[12], 50f, 15f, 0f);
-        RotateTo(articulationBods[13], 50f, 15f, 0f);
-        RotateTo(articulationBods[14], 50f, 15f, 0f);
+        */
+        //RotateTo(articulationBods[3], 50f, 15f, 0f);
+        //RotateTo(articulationBods[4], 50f, 15f, 0f);
+        // RotateTo(articulationBods[5], 50f, 15f, 0f);
+        ////Little Finger
+        //RotateTo(articulationBods[6], 50f, 15f, 0f);
+        //RotateTo(articulationBods[7], 50f, 15f, 0f);
+        //RotateTo(articulationBods[8], 50f, 15f, 0f);
+        ////Ring Finger
+        //RotateTo(articulationBods[9], 50f, 15f, 0f);
+        //RotateTo(articulationBods[10], 50f, 15f, 0f);
+        //RotateTo(articulationBods[11], 50f, 15f, 0f);
+        ////Thumb
+        //RotateTo(articulationBods[12], 50f, 15f, 0f);
+        //RotateTo(articulationBods[13], 50f, 15f, 0f);
+        //RotateTo(articulationBods[14], 50f, 15f, 0f);
         #endregion
-        
+
 
         /*
         #region Finger and thumb 
@@ -339,6 +393,32 @@ public class ArticulationDriver : MonoBehaviour
             maxAngles[i] = Mathf.Max(maxAngles[i], currentAngle);
         }
         */
+
+    }
+
+    float NormalizeAngle(float angle)
+    {
+        return angle % 360;
+    }
+    float CalculateBendingAngle(float initialAngle, float currentAngle)
+    {
+        float normalizedInitial = NormalizeAngle(initialAngle);
+        float normalizedCurrent = NormalizeAngle(currentAngle);
+
+        // If there's a significant change (like jumping from 360 to 0 or vice versa)
+        if (Mathf.Abs(normalizedCurrent - normalizedInitial) > 180)
+        {
+            if (normalizedCurrent > normalizedInitial)
+            {
+                normalizedInitial += 360;
+            }
+            else
+            {
+                normalizedCurrent += 360;
+            }
+        }
+
+        return normalizedCurrent - normalizedInitial;
     }
 
     // 3 versions of the RotateTo functions (overloaded) 
@@ -366,13 +446,13 @@ public class ArticulationDriver : MonoBehaviour
             upperLimit = body.xDrive.upperLimit,
             target = targetTorX
         };
-        body.zDrive = new ArticulationDrive()
+        body.yDrive = new ArticulationDrive()
         {
-            stiffness = body.zDrive.stiffness,
-            forceLimit = body.zDrive.forceLimit,
-            damping = body.zDrive.damping,
-            lowerLimit = body.zDrive.lowerLimit,
-            upperLimit = body.zDrive.upperLimit,
+            stiffness = body.yDrive.stiffness,
+            forceLimit = body.yDrive.forceLimit,
+            damping = body.yDrive.damping,
+            lowerLimit = body.yDrive.lowerLimit,
+            upperLimit = body.yDrive.upperLimit,
             target = targetTorY
         };
     }
