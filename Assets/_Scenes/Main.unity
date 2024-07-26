@@ -364,10 +364,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.0068913163
-  m_Height: 0.030792369
+  m_Radius: 0.00787703
+  m_Height: 0.027437596
   m_Direction: 2
-  m_Center: {x: 0.0008097268, y: -0.0014187113, z: 0.00939788}
+  m_Center: {x: 0.0008097422, y: -0.00043298912, z: 0.011075245}
 --- !u!171741748 &25206550
 ArticulationBody:
   m_ObjectHideFlags: 0
@@ -1775,9 +1775,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.0069268644
-  m_Height: 0.032118715
+  m_Height: 0.02623482
   m_Direction: 2
-  m_Center: {x: 0.0010561881, y: -0.0016293097, z: 0.012267479}
+  m_Center: {x: 0.0010561901, y: -0.0016293155, z: 0.015209468}
 --- !u!171741748 &255340496
 ArticulationBody:
   m_ObjectHideFlags: 0
@@ -6823,9 +6823,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.008677842
-  m_Height: 0.026324488
+  m_Height: 0.03718185
   m_Direction: 2
-  m_Center: {x: 0.0016428424, y: -0.00046561015, z: 0.021561477}
+  m_Center: {x: 0.0016427472, y: -0.00046556754, z: 0.012461597}
 --- !u!171741748 &707922165
 ArticulationBody:
   m_ObjectHideFlags: 0
@@ -8748,10 +8748,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.01018863
-  m_Height: 0.042072754
+  m_Radius: 0.01206765
+  m_Height: 0.04207277
   m_Direction: 2
-  m_Center: {x: 0.002688664, y: 0.000000065574454, z: 0.0030302}
+  m_Center: {x: 0.00078489765, y: -0.00396033, z: 0.0030301998}
 --- !u!171741748 &934101356
 ArticulationBody:
   m_ObjectHideFlags: 0
@@ -14621,9 +14621,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.008495795
-  m_Height: 0.035186294
+  m_Height: 0.03516942
   m_Direction: 2
-  m_Center: {x: 0.0009958443, y: -0.000000087423295, z: 0.02262947}
+  m_Center: {x: 0.0009958431, y: -0.000000104441895, z: 0.022621056}
 --- !u!171741748 &1631517170
 ArticulationBody:
   m_ObjectHideFlags: 0
@@ -14965,10 +14965,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.0058872364
-  m_Height: 0.030636324
+  m_Radius: 0.0068328935
+  m_Height: 0.025028495
   m_Direction: 2
-  m_Center: {x: 0.00062208856, y: -0.002234817, z: 0.008335464}
+  m_Center: {x: 0.00093732367, y: -0.0022348345, z: 0.0111393845}
 --- !u!171741748 &1656194551
 ArticulationBody:
   m_ObjectHideFlags: 0
@@ -16290,10 +16290,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.0075
-  m_Height: 0.02184634
+  m_Radius: 0.007511345
+  m_Height: 0.027949896
   m_Direction: 2
-  m_Center: {x: -0.000000021082874, y: 0.00000007571191, z: 0.011610715}
+  m_Center: {x: 0.0013729169, y: -0.0013615384, z: 0.0146660255}
 --- !u!171741748 &1785542329
 ArticulationBody:
   m_ObjectHideFlags: 0
@@ -17325,10 +17325,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.008913793
-  m_Height: 0.024335116
+  m_Radius: 0.007566789
+  m_Height: 0.02467598
   m_Direction: 2
-  m_Center: {x: 0.0014138032, y: 3.4801348e-10, z: 0.0053324336}
+  m_Center: {x: 0.0012527327, y: -0.0026891676, z: 0.013398477}
 --- !u!171741748 &1951463887
 ArticulationBody:
   m_ObjectHideFlags: 0
@@ -18823,10 +18823,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.008882486
-  m_Height: 0.030579476
+  m_Radius: 0.009125311
+  m_Height: 0.029154109
   m_Direction: 2
-  m_Center: {x: 0.0013062233, y: 0.002235644, z: 0.022614585}
+  m_Center: {x: 0.0017477949, y: 0.00016016378, z: 0.02840417}
 --- !u!171741748 &2099360997
 ArticulationBody:
   m_ObjectHideFlags: 0
