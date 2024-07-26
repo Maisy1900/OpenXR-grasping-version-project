@@ -33,6 +33,10 @@ public class ArticulationDriver : MonoBehaviour
     public Text infoText;
     public Text angleDisplayText;
 
+    [Range(0f,50f)]
+    public float xoffset = 15f;
+    [Range(0f, 50f)]
+    public float yoffset = 15f;
 
     ArticulationBody thisArticulation; // Root-Parent articulation body 
     float xTargetAngle, yTargetAngle = 0f;
@@ -135,41 +139,39 @@ public class ArticulationDriver : MonoBehaviour
             int k = 0; 
             foreach(Transform jointTF in driverJoints)
             {
-                initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x+12f;
-                initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y+6f;
-                initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z+12f;
+                initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x ;
+                initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
+                initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
                 k++;
             }
-            initialXAngles[5] = driverJoints[5].transform.localRotation.eulerAngles.x;
         }
 
         for (int i = 0; i < driverJoints.Length; i++)
         {
-            float tempAngXProx = driverJoints[i].transform.localRotation.eulerAngles.x;
+            float tempAngXProx = driverJoints[i].transform.localRotation.eulerAngles.x - xoffset;
             float tempAngYProx = driverJoints[i].transform.localRotation.eulerAngles.y;
             float tempAngZProx = driverJoints[i].transform.localRotation.eulerAngles.z;
 
             float ang_targXProx = CalculateBendingAngle(initialXAngles[i], tempAngXProx);
             float ang_targYProx = CalculateBendingAngle(initialYAngles[i], tempAngYProx);
             float ang_targZProx = CalculateBendingAngle(initialZAngles[i], tempAngZProx);
-           // RotateTo(articulationBods[i], ang_targXProx, ang_targYProx, ang_targZProx);
+            // RotateTo(articulationBods[i], ang_targXProx, ang_targYProx, ang_targZProx);
 
-           if (articulationBods[i].name.Contains("xyrotations")) {
+            if (articulationBods[i].tag.Contains("xyrotations"))
+            {
                 RotateTo(articulationBods[i], ang_targXProx, ang_targYProx);
-                ang_targZProx = 0;
             }
-            else if (articulationBods[i].name.Contains("xrotations")) {
+            else if (articulationBods[i].tag.Contains("xrotations"))
+            {
                 RotateTo(articulationBods[i], ang_targXProx);
-                ang_targYProx = 0f;
-                ang_targZProx = 0f;
-                Debug.Log("angle" + ang_targXProx);
-
             }
-
-            RotateTo(articulationBods[i], ang_targXProx, ang_targYProx, ang_targZProx);
+            else
+            {
+                RotateTo(articulationBods[i], ang_targZProx, -ang_targXProx, ang_targYProx);
+            }
         }
         #endregion
-        #region anoyingcode 
+        #region code 
         //if (articulationBods[0]) // R_IndexProximal
         //{
         //    float tempAngXProx = driverJoints[0].transform.localRotation.eulerAngles.x;
