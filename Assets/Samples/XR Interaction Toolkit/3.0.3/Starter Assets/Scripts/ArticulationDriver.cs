@@ -38,6 +38,11 @@ public class ArticulationDriver : MonoBehaviour
     [Range(0f, 50f)]
     public float yoffset = 15f;
 
+    //offsets
+    [Range(-50f, 50f)] public float[] XOffsets = new float[15];
+    [Range(-50f, 50f)] public float[] YOffsets = new float[15];
+    [Range(-50f, 50f)] public float[] ZOffsets = new float[15];
+
     ArticulationBody thisArticulation; // Root-Parent articulation body 
     float xTargetAngle, yTargetAngle = 0f;
 
@@ -139,7 +144,7 @@ public class ArticulationDriver : MonoBehaviour
             int k = 0; 
             foreach(Transform jointTF in driverJoints)
             {
-                initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x ;
+                initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x;
                 initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
                 initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
                 k++;
@@ -148,9 +153,9 @@ public class ArticulationDriver : MonoBehaviour
 
         for (int i = 0; i < driverJoints.Length; i++)
         {
-            float tempAngXProx = driverJoints[i].transform.localRotation.eulerAngles.x - xoffset;
-            float tempAngYProx = driverJoints[i].transform.localRotation.eulerAngles.y;
-            float tempAngZProx = driverJoints[i].transform.localRotation.eulerAngles.z;
+            float tempAngXProx = driverJoints[i].transform.localRotation.eulerAngles.x - XOffsets[i];
+            float tempAngYProx = driverJoints[i].transform.localRotation.eulerAngles.y - YOffsets[i];
+            float tempAngZProx = driverJoints[i].transform.localRotation.eulerAngles.z - ZOffsets[i];
 
             float ang_targXProx = CalculateBendingAngle(initialXAngles[i], tempAngXProx);
             float ang_targYProx = CalculateBendingAngle(initialYAngles[i], tempAngYProx);
