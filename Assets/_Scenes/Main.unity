@@ -2119,7 +2119,7 @@ ArticulationBody:
   m_Twist: 1
   m_XDrive:
     lowerLimit: 0
-    upperLimit: 180
+    upperLimit: 110
     stiffness: 750
     damping: 0.75
     forceLimit: 10000
@@ -7042,7 +7042,7 @@ ArticulationBody:
   m_Twist: 1
   m_XDrive:
     lowerLimit: 0
-    upperLimit: 180
+    upperLimit: 110
     stiffness: 750
     damping: 0.75
     forceLimit: 10000
@@ -16504,7 +16504,7 @@ ArticulationBody:
   m_Twist: 1
   m_XDrive:
     lowerLimit: 0
-    upperLimit: 180
+    upperLimit: 110
     stiffness: 750
     damping: 0.75
     forceLimit: 10000
@@ -17539,7 +17539,7 @@ ArticulationBody:
   m_Twist: 1
   m_XDrive:
     lowerLimit: 0
-    upperLimit: 180
+    upperLimit: 110
     stiffness: 750
     damping: 0.75
     forceLimit: 10000
