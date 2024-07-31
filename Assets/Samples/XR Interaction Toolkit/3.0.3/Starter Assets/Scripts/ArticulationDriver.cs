@@ -175,7 +175,7 @@ public class ArticulationDriver : MonoBehaviour
                 if(handedness == Hand.Right)
                     RotateTo(articulationBods[i], ang_targZProx, -ang_targXProx, ang_targYProx);
                 else
-                    RotateTo(articulationBods[i], ang_targZProx, -ang_targXProx, -ang_targYProx);
+                    RotateTo(articulationBods[i],- ang_targZProx, ang_targXProx, ang_targYProx);
             }
         }
         #endregion
