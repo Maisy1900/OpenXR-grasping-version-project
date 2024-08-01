@@ -21519,7 +21519,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 683117893914097205, guid: 0054933ccd484354daed9ececa603761, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 683117893914097205, guid: 0054933ccd484354daed9ececa603761, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -21532,6 +21532,18 @@ PrefabInstance:
     - target: {fileID: 4586645771530419721, guid: 0054933ccd484354daed9ececa603761, type: 3}
       propertyPath: m_TrackingStateInput.m_Action.m_Name
       value: Tracking State Input
+      objectReference: {fileID: 0}
+    - target: {fileID: 4923983949179236415, guid: 0054933ccd484354daed9ececa603761, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4923983949179236415, guid: 0054933ccd484354daed9ececa603761, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4923983949179236415, guid: 0054933ccd484354daed9ececa603761, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -1.248
       objectReference: {fileID: 0}
     - target: {fileID: 5181469050022471959, guid: 0054933ccd484354daed9ececa603761, type: 3}
       propertyPath: m_LocalPosition.y
@@ -21607,7 +21619,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8836963741353241209, guid: 0054933ccd484354daed9ececa603761, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8836963741353241209, guid: 0054933ccd484354daed9ececa603761, type: 3}
       propertyPath: m_Materials.Array.data[0]
