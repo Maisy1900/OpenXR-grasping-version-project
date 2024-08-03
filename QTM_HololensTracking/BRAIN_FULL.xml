@@ -1,0 +1,58 @@
+<QTM_Body_File_Ver_1.00>
+    <Body>
+        <Name>BRAIN3107</Name>
+        <Color R="255" G="0" B="0"/>
+        <MaximumResidual>10.000000</MaximumResidual>
+        <MinimumMarkersInBody>3</MinimumMarkersInBody>
+        <BoneLengthTolerance>5.000000</BoneLengthTolerance>
+        <Filter Preset="Static pose"/>
+        <Mesh>
+            <Name/>
+            <Position X="0.000000" Y="0.000000" Z="0.000000"/>
+            <Rotation X="0.000000" Y="0.000000" Z="0.000000"/>
+            <Scale>1.000000</Scale>
+            <Opacity>1.000000</Opacity>
+        </Mesh>
+        <Points>
+            <Point X="99.016179" Y="-225.157465" Z="-29.806245" Virtual="0" PhysicalId="0" Name="BRAIN3107 - 1"/>
+            <Point X="47.471738" Y="-66.423923" Z="-180.614692" Virtual="0" PhysicalId="0" Name="BRAIN3107 - 2"/>
+            <Point X="99.488446" Y="-216.787495" Z="-211.725042" Virtual="0" PhysicalId="0" Name="BRAIN3107 - 3"/>
+            <Point X="-85.784092" Y="-227.493568" Z="-26.287644" Virtual="0" PhysicalId="0" Name="BRAIN3107 - 4"/>
+            <Point X="-625.268319" Y="-829.274162" Z="-16.463194" Virtual="0" PhysicalId="0" Name="BRAIN3107 - 5"/>
+            <Point X="252.946865" Y="-900.616243" Z="-245.082533" Virtual="0" PhysicalId="0" Name="BRAIN3107 - 6"/>
+            <Point X="81.818472" Y="-5.788970" Z="-114.680301" Virtual="0" PhysicalId="0" Name="BRAIN3107 - 7"/>
+            <Point X="0.000000" Y="0.000000" Z="-222.041167" Virtual="0" PhysicalId="0" Name="BRAIN3107 - 8"/>
+            <Point X="-66.598518" Y="-1441.204421" Z="113.735293" Virtual="0" PhysicalId="0" Name="BRAIN3107 - 9"/>
+            <Point X="0.000000" Y="0.000000" Z="0.000000" Virtual="0" PhysicalId="0" Name="BRAIN3107 - 10"/>
+            <Point X="-86.999809" Y="-5.788970" Z="-108.713091" Virtual="0" PhysicalId="0" Name="BRAIN3107 - 11"/>
+            <Point X="-889.554550" Y="-799.169415" Z="-284.024092" Virtual="0" PhysicalId="0" Name="BRAIN3107 - 12"/>
+        </Points>
+        <Data_origin X="0.000000" Y="0.000000" Z="0.000000" Relative_body="1">0</Data_origin>
+        <Data_orientation R11="1.000000" R12="0.000000" R13="0.000000" R21="0.000000" R22="1.000000" R23="0.000000" R31="0.000000" R32="0.000000" R33="1.000000" Relative_body="1">0</Data_orientation>
+    </Body>
+	<Body>
+		<Name>QRCODE29072</Name>
+		<Color R="0" G="0" B="255"/>
+		<MaximumResidual>10.000000</MaximumResidual>
+		<MinimumMarkersInBody>3</MinimumMarkersInBody>
+		<BoneLengthTolerance>5.000000</BoneLengthTolerance>
+		<Filter Preset="No filter"/>
+		<Mesh>
+			<Name/>
+			<Position X="0.000000" Y="0.000000" Z="0.000000"/>
+			<Rotation X="0.000000" Y="0.000000" Z="0.000000"/>
+			<Scale>1.000000</Scale>
+			<Opacity>1.000000</Opacity>
+		</Mesh>
+		<Points>
+			<Point X="0.000000" Y="-50.000000" Z="8.000000" Virtual="0" PhysicalId="0" Name="QRCODE29072 - 1"/>
+			<Point X="64.753492" Y="0.753837" Z="11.903142" Virtual="0" PhysicalId="0" Name="QRCODE29072 - 2"/>
+			<Point X="-165.764714" Y="-57.230792" Z="9.672534" Virtual="0" PhysicalId="0" Name="QRCODE29072 - 3"/>
+			<Point X="-227.250521" Y="0.753837" Z="11.903142" Virtual="0" PhysicalId="0" Name="QRCODE29072 - 4"/>
+			<Point X="0.290635" Y="168.603628" Z="8.000000" Virtual="0" PhysicalId="0" Name="QRCODE29072 - 5"/>
+			<Point X="49.812325" Y="87.535634" Z="8.409207" Virtual="0" PhysicalId="0" Name="QRCODE29072 - 6"/>
+		</Points>
+		<Data_origin X="0.000000" Y="0.000000" Z="0.000000" Relative_body="1">0</Data_origin>
+		<Data_orientation R11="1.000000" R12="0.000000" R13="0.000000" R21="0.000000" R22="1.000000" R23="0.000000" R31="0.000000" R32="0.000000" R33="1.000000" Relative_body="1">0</Data_orientation>
+	</Body>
+</QTM_Body_File_Ver_1.00>

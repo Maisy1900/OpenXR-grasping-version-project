@@ -1,9 +1,9 @@
 using GeneticSharp.Domain.Chromosomes;
 using GeneticSharp.Domain.Randomizations;
 
-public class MyChromosome : ChromosomeBase
+public class Parameters : ChromosomeBase
 {
-    public MyChromosome() : base(2) // number of genes
+    public Parameters() : base(3) // number of genes
     {
         CreateGenes();
     }
@@ -15,6 +15,6 @@ public class MyChromosome : ChromosomeBase
 
     public override IChromosome CreateNew()
     {
-        return new MyChromosome();
+        return new Parameters();
     }
 }

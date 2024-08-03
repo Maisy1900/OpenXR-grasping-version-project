@@ -1,0 +1,10 @@
+1	08:31:02	Disconnected	
+1	08:31:02	Error(s) when waiting for realtime frame. Double-click for more information	Error(s) when waiting for realtime frame:  001 - code 09 - camera 01 (192.168.254.3) : The camera has stopped communicating. 002 - code 09 - camera 02 (192.168.254.12) : The camera has stopped communicating. 003 - code 09 - camera 03 (192.168.254.10) : The camera has stopped communicating. 004 - code 09 - camera 04 (192.168.254.5) : The camera has stopped communicating. 005 - code 09 - camera 05 (192.168.254.6) : The camera has stopped communicating. 006 - code 09 - camera 06 (192.168.254.4) : The camera has stopped communicating. 007 - code 09 - camera 07 (192.168.254.7) : The camera has stopped communicating. 008 - code 09 - camera 08 (192.168.254.9) : The camera has stopped communicating.
+1	08:32:00	Realtime started	
+1	14:12:52	Rigid body: QRCODE2507 added.	The new body definition was added to the Project Options.
+1	14:28:05	Rigid body: HEADSET25073 added.	The new body definition was added to the Project Options.
+1	19:01:47	Rigid body: BRAIN25075 added.	The new body definition was added to the Project Options.
+1	21:51:25	Disconnected	
+1	21:51:25	Error(s) when waiting for realtime frame. Double-click for more information	Error(s) when waiting for realtime frame:  001 - code 09 - camera 01 (192.168.254.3) : The camera has stopped communicating. 002 - code 09 - camera 02 (192.168.254.12) : The camera has stopped communicating. 003 - code 09 - camera 03 (192.168.254.10) : The camera has stopped communicating. 004 - code 09 - camera 04 (192.168.254.5) : The camera has stopped communicating. 005 - code 09 - camera 05 (192.168.254.6) : The camera has stopped communicating. 006 - code 09 - camera 06 (192.168.254.4) : The camera has stopped communicating. 007 - code 09 - camera 07 (192.168.254.7) : The camera has stopped communicating. 008 - code 09 - camera 08 (192.168.254.9) : The camera has stopped communicating.
+1	23:52:30	Realtime started	
+1	23:52:53	Disconnected	

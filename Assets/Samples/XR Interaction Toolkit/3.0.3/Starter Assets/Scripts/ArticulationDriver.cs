@@ -180,7 +180,15 @@ public class ArticulationDriver : MonoBehaviour
         }
         #endregion
     }
-
+    void MeasureInitialAngles()
+    {
+        for (int k = 0; k < driverJoints.Length; k++)
+        {
+            initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x;
+            initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
+            initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
+        }
+    }
     float NormalizeAngle(float angle)
     {
         return angle % 360;
