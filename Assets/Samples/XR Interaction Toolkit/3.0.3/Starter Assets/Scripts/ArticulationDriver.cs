@@ -189,6 +189,7 @@ public class ArticulationDriver : MonoBehaviour
             initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
         }
     }
+
     float NormalizeAngle(float angle)
     {
         return angle % 360;
