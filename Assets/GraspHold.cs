@@ -76,7 +76,7 @@ public class GraspHold : MonoBehaviour
         }
 
         // Handle parenting based on grasp distance and contact
-        /*
+        
         if (grasp_dist < 0.085f && incontact && !globalGraspFlag)
         {
             transform.parent = my_hand.transform;
@@ -93,7 +93,7 @@ public class GraspHold : MonoBehaviour
             isGrasped = false;
             globalGraspFlag = false; // Clear the global flag
         }
-        */
+        
         // Check if space key is pressed
         if (Input.GetKeyDown(KeyCode.Space))
         {
