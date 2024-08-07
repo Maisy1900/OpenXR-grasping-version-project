@@ -26,6 +26,12 @@ TagManager:
   - xyrotations
   - xyzrotations
   - xrotations
+  - Floor
+  - projectile
+  - FxTemporaire
+  - idx_tip
+  - tmb_tip
+  - Checkpoint
   layers:
   - Default
   - TransparentFX
