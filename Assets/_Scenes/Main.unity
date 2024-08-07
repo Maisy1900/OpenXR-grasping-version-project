@@ -2651,7 +2651,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!111 &279149596
 Animation:
   m_ObjectHideFlags: 0
@@ -2683,6 +2683,7 @@ MonoBehaviour:
   index: {fileID: 4992640111494142287}
   thumb: {fileID: 5904269318182307560}
   wrist: {fileID: 5380508159221933227}
+  cubeID: Middle
   path: C:\Users\VR-Lab\Documents\Projects\OpenXR grasping version\Assets\Recordings
 --- !u!114 &279149598
 MonoBehaviour:
@@ -11956,6 +11957,7 @@ MonoBehaviour:
   index: {fileID: 4992640111494142287}
   thumb: {fileID: 5904269318182307560}
   wrist: {fileID: 5380508159221933227}
+  cubeID: Base
   path: C:\Users\VR-Lab\Documents\Projects\OpenXR grasping version\Assets\Recordings
 --- !u!111 &916794117
 Animation:
@@ -12000,7 +12002,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   totalTrials: 4
-  checkpoints: []
+  checkpoints:
+  - {fileID: 6668661}
+  - {fileID: 705253795}
+  - {fileID: 330688135}
+  - {fileID: 1976955843}
 --- !u!136 &934101355
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -17049,7 +17055,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!111 &1412766531
 Animation:
   m_ObjectHideFlags: 0
@@ -17081,6 +17087,7 @@ MonoBehaviour:
   index: {fileID: 4992640111494142287}
   thumb: {fileID: 5904269318182307560}
   wrist: {fileID: 5380508159221933227}
+  cubeID: Top
   path: C:\Users\VR-Lab\Documents\Projects\OpenXR grasping version\Assets\Recordings
 --- !u!114 &1412766533
 MonoBehaviour:
@@ -28928,9 +28935,9 @@ Animation:
   m_GameObject: {fileID: 7942851921515323393}
   m_Enabled: 0
   serializedVersion: 3
-  m_Animation: {fileID: 7400000, guid: 8d7ae61f77308d145b5bf08eca087858, type: 2}
+  m_Animation: {fileID: 7400000, guid: 7b6f30979b0bb7b49b2d459efdb61b30, type: 2}
   m_Animations:
-  - {fileID: 7400000, guid: 8d7ae61f77308d145b5bf08eca087858, type: 2}
+  - {fileID: 7400000, guid: 7b6f30979b0bb7b49b2d459efdb61b30, type: 2}
   m_WrapMode: 0
   m_PlayAutomatically: 1
   m_AnimatePhysics: 0
@@ -29431,7 +29438,7 @@ SceneRoots:
   - {fileID: 279149606}
   - {fileID: 1412766541}
   - {fileID: 6668661}
-  - {fileID: 330688135}
   - {fileID: 705253795}
+  - {fileID: 330688135}
   - {fileID: 1976955843}
   - {fileID: 821327590}

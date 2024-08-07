@@ -14,6 +14,7 @@ public class GraspHold : MonoBehaviour
 {
     public Transform index, thumb, wrist;
     private GameObject my_hand;
+    public string cubeID;
 
     float grasp_dist = 0f;
     bool incontact = false;
@@ -75,6 +76,7 @@ public class GraspHold : MonoBehaviour
         }
 
         // Handle parenting based on grasp distance and contact
+        /*
         if (grasp_dist < 0.085f && incontact && !globalGraspFlag)
         {
             transform.parent = my_hand.transform;
@@ -91,7 +93,7 @@ public class GraspHold : MonoBehaviour
             isGrasped = false;
             globalGraspFlag = false; // Clear the global flag
         }
-
+        */
         // Check if space key is pressed
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -103,7 +105,8 @@ public class GraspHold : MonoBehaviour
     private void SaveCubePose()
     {
         string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        string filePath = Path.Combine(path, "cube_pose_" + timestamp + ".csv");
+        string filePath = Path.Combine(path, "cube_pose_" + cubeID + "_" + timestamp + ".csv");
+
 
         try
         {
