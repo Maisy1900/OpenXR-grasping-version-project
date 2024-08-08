@@ -15,8 +15,8 @@ public class StackingTrial : MonoBehaviour
     private float trialStartTime;
     private List<string> stackingResults = new List<string>();
     private int currentStep = 0;
-    private const float alignmentThreshold = 0.025f; // 25mm threshold
-    private const float rotationThreshold = 25f; // 25 degrees threshold
+    private const float alignmentThreshold = 0.005f; // 5mm threshold for horizontal alignment
+    private const float rotationThreshold = 10f; // 10 degrees threshold for rotation alignment
     private const float velocityThreshold = 0.01f; // Velocity threshold to consider the cube settled
     private string path;
 
@@ -73,6 +73,7 @@ public class StackingTrial : MonoBehaviour
         Transform previousCube = null;
         bool isCurrentCubeLocked = false;
         float alignmentWithPrevious = 0f;
+        float rotationDifference = 0f;
 
         switch (currentStep)
         {
@@ -85,13 +86,15 @@ public class StackingTrial : MonoBehaviour
                 currentCube = midCube;
                 previousCube = baseCube;
                 isCurrentCubeLocked = midCubeLocked;
-                alignmentWithPrevious = Vector3.Distance(currentCube.position, previousCube.position);
+                alignmentWithPrevious = Vector3.Distance(new Vector3(currentCube.position.x, 0, currentCube.position.z), new Vector3(previousCube.position.x, 0, previousCube.position.z));
+                rotationDifference = Quaternion.Angle(currentCube.rotation, previousCube.rotation);
                 break;
             case 3:
                 currentCube = topCube;
                 previousCube = midCube;
                 isCurrentCubeLocked = topCubeLocked;
-                alignmentWithPrevious = Vector3.Distance(currentCube.position, previousCube.position);
+                alignmentWithPrevious = Vector3.Distance(new Vector3(currentCube.position.x, 0, currentCube.position.z), new Vector3(previousCube.position.x, 0, previousCube.position.z));
+                rotationDifference = Quaternion.Angle(currentCube.rotation, previousCube.rotation);
                 break;
             default:
                 CompleteTrial();
@@ -104,38 +107,39 @@ public class StackingTrial : MonoBehaviour
             return;
         }
 
-        // Calculate position alignment
-        float alignmentWithGuideline = Vector3.Distance(currentCube.position, planeGuideline.position);
-        float rotationAlignment = Quaternion.Angle(currentCube.rotation, planeGuideline.rotation);
+        // Calculate position alignment ignoring Y direction
+        float alignmentWithGuideline = Vector3.Distance(new Vector3(currentCube.position.x, 0, currentCube.position.z), new Vector3(planeGuideline.position.x, 0, planeGuideline.position.z));
 
         Rigidbody rb = currentCube.GetComponent<Rigidbody>();
 
         // Debugging information to understand the alignment and velocity
-        Debug.Log($"{currentCube.name} - Alignment with Previous: {alignmentWithPrevious}, Alignment with Guideline: {alignmentWithGuideline}, Rotation Alignment: {rotationAlignment}, Velocity: {rb.velocity.magnitude}");
+        Debug.Log($"{currentCube.name} - Alignment with Previous: {alignmentWithPrevious}, Alignment with Guideline: {alignmentWithGuideline}, Rotation Difference: {rotationDifference}, Velocity: {rb.velocity.magnitude}");
+
+        // Check if the rotation difference is within acceptable ranges (near multiples of 90 degrees)
+        bool isRotationAligned = (Mathf.Abs(rotationDifference % 90) <= rotationThreshold || Mathf.Abs((rotationDifference % 90) - 90) <= rotationThreshold);
 
         // Check if the cube is aligned correctly
-        bool isAligned = (currentStep == 1 && alignmentWithGuideline <= alignmentThreshold && rotationAlignment <= rotationThreshold) ||
-                         (currentStep == 2 && alignmentWithPrevious <= alignmentThreshold && rotationAlignment <= rotationThreshold) ||
-                         (currentStep == 3 && alignmentWithPrevious <= alignmentThreshold && rotationAlignment <= rotationThreshold);
+        bool isAligned = (currentStep == 1 && alignmentWithGuideline <= alignmentThreshold) ||
+                         (currentStep > 1 && alignmentWithPrevious <= alignmentThreshold && isRotationAligned);
 
         // Detailed debug logs
         if (currentStep == 1)
         {
             Debug.Log($"{currentCube.name} Alignment with Guideline: {alignmentWithGuideline} <= {alignmentThreshold}");
-            Debug.Log($"{currentCube.name} Rotation Alignment: {rotationAlignment} <= {rotationThreshold}");
         }
         else
         {
             Debug.Log($"{currentCube.name} Alignment with Previous: {alignmentWithPrevious} <= {alignmentThreshold}");
-            Debug.Log($"{currentCube.name} Rotation Alignment: {rotationAlignment} <= {rotationThreshold}");
+            Debug.Log($"{currentCube.name} Rotation Difference: {rotationDifference} aligned: {isRotationAligned}");
         }
 
-        // If the cube is aligned, has low velocity, and is not parented, lock it in place
+        // If the cube is aligned, has low velocity, and is not parented, lock it in place and change its color
         if (isAligned && rb.velocity.magnitude <= velocityThreshold && currentCube.parent == null)
         {
             Debug.Log($"{currentCube.name} is in alignment and settled.");
-            RecordAlignment(currentCube, alignmentWithPrevious, alignmentWithGuideline, rotationAlignment);
-            LockCube(currentCube);
+            ChangeCubeColor(currentCube, Color.green); // Change color to green when aligned
+            RecordAlignment(currentCube, alignmentWithPrevious, alignmentWithGuideline, rotationDifference);
+            LockCube(currentCube, previousCube);
             currentStep++;
             if (currentStep > 3)
             {
@@ -159,15 +163,24 @@ public class StackingTrial : MonoBehaviour
         }
     }
 
-    private void RecordAlignment(Transform cube, float alignmentWithPrevious, float alignmentWithGuideline, float rotationAlignment)
+    private void ChangeCubeColor(Transform cube, Color color)
     {
-        float timestamp = Time.time - trialStartTime;
-        string result = $"{currentStep},{cube.name},{cube.position.x},{cube.position.y},{cube.position.z},{alignmentWithPrevious},{alignmentWithGuideline},{rotationAlignment},{timestamp}";
-        stackingResults.Add(result);
-        Debug.Log($"Step {currentStep} completed for {cube.name}. Time: {timestamp} seconds, Alignment with previous: {alignmentWithPrevious}m, Alignment with guideline: {alignmentWithGuideline}m, Rotation alignment: {rotationAlignment} degrees");
+        Renderer renderer = cube.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            renderer.material.color = color;
+        }
     }
 
-    private void LockCube(Transform cube)
+    private void RecordAlignment(Transform cube, float alignmentWithPrevious, float alignmentWithGuideline, float rotationDifference)
+    {
+        float timestamp = Time.time - trialStartTime;
+        string result = $"{currentStep},{cube.name},{cube.position.x},{cube.position.y},{cube.position.z},{alignmentWithPrevious},{alignmentWithGuideline},{rotationDifference},{timestamp}";
+        stackingResults.Add(result);
+        Debug.Log($"Step {currentStep} completed for {cube.name}. Time: {timestamp} seconds, Alignment with previous: {alignmentWithPrevious}m, Alignment with guideline: {alignmentWithGuideline}m, Rotation difference: {rotationDifference} degrees");
+    }
+
+    private void LockCube(Transform cube, Transform previousCube)
     {
         Rigidbody rb = cube.GetComponent<Rigidbody>();
         rb.isKinematic = true;

@@ -93,7 +93,6 @@ public class GraspHold : MonoBehaviour
             isGrasped = false;
             globalGraspFlag = false; // Clear the global flag
         }
-        
         // Check if space key is pressed
         if (Input.GetKeyDown(KeyCode.Space))
         {
