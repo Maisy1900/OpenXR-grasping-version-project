@@ -180,8 +180,8 @@ public class ArticulationDriver : MonoBehaviour
         }
         #endregion
     }
-    void MeasureInitialAngles()
-    {
+    public void MeasureInitialAngles()
+    { 
         for (int k = 0; k < driverJoints.Length; k++)
         {
             initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x;
