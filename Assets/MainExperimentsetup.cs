@@ -3,122 +3,110 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
+class DataClass
+{
+    public List<Vector3> cubePos;
+    public List<Vector3> wristPos;
+    public List<float> time = new List<float>();
+    public List<string> trial_condition = new List<string>();
+    public List<int> trial_number= new List<int>();
+    public List<float> fps = new List<float>();
+
+    DataClass()
+    {
+        cubePos = new List<Vector3>();
+        wristPos = new List<Vector3>();
+        time = new List<float>();
+        trial_condition = new List<string>();
+        fps = new List<float>();
+
+    }
+}
+
 public class MainExperimentsetup : MonoBehaviour
 {
     // Variables to store experiment data
-    private List<Vector3> cubePositions = new List<Vector3>();
-    private List<string> handPoses = new List<string>();
-    private List<float> timings = new List<float>();
-    private string csvFilePath = "experiment_results.csv";
-
-    public Animator handAnimator; // Reference to the Animator component
-    public GameObject rWristGameObject; // Reference to the GameObject with ArticulationDriver
-    private ArticulationDriver articulationDriver; // Reference to the ArticulationDriver script
-
+    DataClass dataclass;
+    public int number_of_simulations = 10;
+    public ArticulationDriver articulationDriver; 
 
     // Function to record results
-    void RecordResults(Vector3 cubePosition, string handPose, float timing)
+    void RecordResults(Vector3 cubePosition, Vector3 handPose, float timing, int trialNumber)
     {
-        cubePositions.Add(cubePosition);
-        handPoses.Add(handPose);
-        timings.Add(timing);
+        // TODO: record cube  orientation and position
+
+        dataclass.trial_condition.Add("Lifting");
+        dataclass.trial_number.Add(trialNumber);
+        dataclass.cubePos.Add(cubePosition);
+        dataclass.wristPos.Add(handPose);
+        dataclass.time.Add(timing);
+        dataclass.fps.Add(Time.captureFramerate);
 
         // Write results to CSV file
-        using (StreamWriter writer = new StreamWriter(csvFilePath, true))
-        {
-            writer.WriteLine($"{cubePosition.x},{cubePosition.y},{cubePosition.z},{handPose},{timing}");
-        }
+
     }
 
     // Function to conduct trials
     IEnumerator ConductTrials()
     {
-        for (int i = 0; i < 10; i++) // Example: 10 trials
+        for (int i = 0; i<number_of_simulations; i++)
         {
             // TODO: Change physics parameters here based on the defined metric
-
+            Physics.defaultSolverIterations = 10;
+            Physics.defaultSolverVelocityIterations = 5;
+            Physics.defaultContactOffset = 0.01f;
+            Physics.defaultMaxDepenetrationVelocity = 10;
+            Physics.bounceThreshold = 2;
+            
             // TODO: Run hand animations for each trial
 
-            // Wait for trial to complete (example: 5 seconds per trial)
-            yield return new WaitForSeconds(5.0f);
+            // Wait for trial to complete
 
             // TODO: Record results after each trial
-            Vector3 cubePosition = Vector3.zero; // Placeholder
-            string handPose = "default"; // Placeholder
-            float timing = 0.0f; // Placeholder
-            RecordResults(cubePosition, handPose, timing);
+
+
         }
+
+        return null; 
+
     }
 
     // Function to run hand calibration
     IEnumerator RunHandCalibration()
     {
         // Start the hand calibration animation
-        handAnimator.Play("Calibration hand");
+        //articulationDriver. 
 
         // Wait for 2 seconds
         yield return new WaitForSeconds(2.0f);
 
         // Directly trigger the calibration logic that would normally be triggered by pressing "M"
-   
-
         // Stop the calibration animation
-        handAnimator.StopPlayback();
 
         // Calibration logic is over
         Debug.Log("Calibration is over");
     }
 
-    // Function to prepare fitness rating/outcome based on CSV
-    void PrepareFitnessRating()
-    {
-        // TODO: Read the CSV file and calculate fitness ratings
-        using (StreamReader reader = new StreamReader(csvFilePath))
-        {
-            string line;
-            while ((line = reader.ReadLine()) != null)
-            {
-                string[] data = line.Split(',');
-                // Process data here
-            }
-        }
-    }
 
     // Function to run hand animations for each trial
     void RunHandAnimations()
     {
         // TODO: Implement hand animations here
     }
-
-    // Start is called before the first frame update
     void Start()
     {
         // Reference the Animator component
-        handAnimator = GetComponent<Animator>();
 
         // Find the ArticulationDriver script on the specified GameObject
-        if (rWristGameObject != null)
-        {
-            articulationDriver = rWristGameObject.GetComponent<ArticulationDriver>();
-
-            // Check if the ArticulationDriver script is found
-            if (articulationDriver == null)
-            {
-                Debug.LogError("ArticulationDriver component not found on the specified GameObject!");
-            }
-        }
-        else
-        {
-            Debug.LogError("R_Wrist GameObject reference is not set!");
-        }
+        //articulationDriver = GameObject.FindWi thTag("RightHandDoNotUse").GetComponent<ArticulationDriver>();
 
         // Start the calibration coroutine
-        StartCoroutine(RunHandCalibration());
     }
 
     // Update is called once per frame
     void Update()
     {
+        //articulationDriver.MeasureAn();
         // TODO: Any per-frame updates
     }
 }

@@ -49,14 +49,29 @@ public class ArticulationDriver : MonoBehaviour
     [Range(-90f, 90f)]
     public float angle = 0f;
 
+    float[] initialXAngles = new float[15];
+    float[] initialYAngles = new float[15];
+    float[] initialZAngles = new float[15];
+
+    public void MeasureInitialAngles()
+    {
+        for (int k = 0; k < driverJoints.Length; k++)
+        {
+            initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x;
+            initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
+            initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
+        }
+    }
+
+    public void MeasureAn()
+    {
+
+    }
+
     void Start()
     {
         thisArticulation = GetComponent<ArticulationBody>();
     }
-
-    float[] initialXAngles = new float[15];
-    float[] initialYAngles = new float[15];
-    float[] initialZAngles = new float[15];
 
     void FixedUpdate()
     {
@@ -179,15 +194,6 @@ public class ArticulationDriver : MonoBehaviour
             }
         }
         #endregion
-    }
-    public void MeasureInitialAngles()
-    { 
-        for (int k = 0; k < driverJoints.Length; k++)
-        {
-            initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x;
-            initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
-            initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
-        }
     }
 
     float NormalizeAngle(float angle)

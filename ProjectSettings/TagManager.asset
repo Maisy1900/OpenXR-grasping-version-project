@@ -32,6 +32,7 @@ TagManager:
   - idx_tip
   - tmb_tip
   - Checkpoint
+  - RightHandDoNotUse
   layers:
   - Default
   - TransparentFX
