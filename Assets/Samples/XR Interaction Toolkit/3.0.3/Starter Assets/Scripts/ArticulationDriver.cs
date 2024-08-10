@@ -14,9 +14,8 @@ public enum Hand
     Left,
 };
 
-public class ArticulationDriver : MonoBehaviour
+public class ArticulationDriver_v2 : MonoBehaviour
 {
-
     public Hand handedness = Hand.Right;
 
     // Physics body driver
@@ -61,11 +60,6 @@ public class ArticulationDriver : MonoBehaviour
             initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
             initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
         }
-    }
-
-    public void MeasureAn()
-    {
-
     }
 
     void Start()

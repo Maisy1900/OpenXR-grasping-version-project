@@ -21,6 +21,17 @@ class DataClass
         fps = new List<float>();
 
     }
+
+
+    public void ClearAllLists()
+    {
+        cubePos.Clear();
+        wristPos.Clear();
+        time.Clear();
+        trial_condition.Clear();
+        trial_number.Clear();
+        fps.Clear();
+    }
 }
 
 public class MainExperimentsetup : MonoBehaviour
@@ -28,9 +39,15 @@ public class MainExperimentsetup : MonoBehaviour
     // Variables to store experiment data
     DataClass dataclass;
     public int number_of_simulations = 10;
-    public ArticulationDriver articulationDriver; 
+    public GameObject articulationObject;
+    ArticulationDriver_v2 articulationDriver;
+    public Transform cubeObj;
 
-    // Function to record results
+    public Animation[] animationz; // 0 = Calibration anim, 1-3 = lift, 4-6 = push and 7-9 = stack
+
+    int[] shuffledTrials = new int[30];
+
+    // Function to record results (check if this is a bottleneck)  
     void RecordResults(Vector3 cubePosition, Vector3 handPose, float timing, int trialNumber)
     {
         // TODO: record cube  orientation and position
@@ -42,32 +59,65 @@ public class MainExperimentsetup : MonoBehaviour
         dataclass.time.Add(timing);
         dataclass.fps.Add(Time.captureFramerate);
 
-        // Write results to CSV file
+        
+    }
+    void SaveDataFile()
+    {
+        // Write results to CSV/JSON file
 
+
+
+        // Clear all lists 
+        dataclass.ClearAllLists(); 
     }
 
     // Function to conduct trials
     IEnumerator ConductTrials()
     {
+
+        RunHandCalibration();
+        yield return new WaitForSeconds(1.0f);
+
         for (int i = 0; i<number_of_simulations; i++)
         {
+            // Setup scene (cubes etc) 
+            //shuffledTrials[[i]
+
             // TODO: Change physics parameters here based on the defined metric
-            Physics.defaultSolverIterations = 10;
-            Physics.defaultSolverVelocityIterations = 5;
-            Physics.defaultContactOffset = 0.01f;
-            Physics.defaultMaxDepenetrationVelocity = 10;
-            Physics.bounceThreshold = 2;
+            Physics.defaultSolverIterations = 10; // [3-40] in step size of 1
+            Physics.defaultSolverVelocityIterations = 5; // [1-40]
+            Physics.defaultContactOffset = 0.01f; // [0.001,0.1]
+            Physics.defaultMaxDepenetrationVelocity = 10; // [1-100]
+            Physics.bounceThreshold = 2; // [0.1-4]
+
+            // TODO: Run hand animations for each trial per condition (lift, push and stack) 
             
-            // TODO: Run hand animations for each trial
+            
+            // Play animation 
+            animationz[shuffledTrials[i]].Play();
 
             // Wait for trial to complete
+            while(animationz[shuffledTrials[i]].isPlaying)
+            {
+                //RecordResults(Vector3 cubePosition, Vector3 handPose, float timing, int trialNumber); 
+                yield return null; 
+            }
+            animationz[shuffledTrials[i]].Stop();
 
-            // TODO: Record results after each trial
+
+            // TODO: Compute results after each trial (this means calculating the distances between the current position and the recorded (animation) position of the cube)
+
+
+            // Update optimization so that the algorithm can decide how to change physics parameters
+
+
+            // Record data into a file (not essential)
+            SaveDataFile();
 
 
         }
 
-        return null; 
+        yield return null; 
 
     }
 
@@ -76,13 +126,19 @@ public class MainExperimentsetup : MonoBehaviour
     {
         // Start the hand calibration animation
         //articulationDriver. 
+        animationz[0].Play(); 
 
         // Wait for 2 seconds
-        yield return new WaitForSeconds(2.0f);
+        yield return new WaitForSeconds(1.0f);
 
         // Directly trigger the calibration logic that would normally be triggered by pressing "M"
         // Stop the calibration animation
+        
+        articulationDriver.MeasureInitialAngles();
+        
+        yield return new WaitForSeconds(1.0f);
 
+        animationz[0].Stop();
         // Calibration logic is over
         Debug.Log("Calibration is over");
     }
@@ -98,7 +154,7 @@ public class MainExperimentsetup : MonoBehaviour
         // Reference the Animator component
 
         // Find the ArticulationDriver script on the specified GameObject
-        //articulationDriver = GameObject.FindWi thTag("RightHandDoNotUse").GetComponent<ArticulationDriver>();
+        articulationDriver = articulationObject.GetComponent<ArticulationDriver_v2>();
 
         // Start the calibration coroutine
     }
@@ -106,7 +162,20 @@ public class MainExperimentsetup : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //articulationDriver.MeasureAn();
         // TODO: Any per-frame updates
     }
+
+    private System.Random _random = new System.Random();
+    void Shuffle(int[] array)
+    {
+        int p = array.Length;
+        for (int n = p - 1; n > 0; n--)
+        {
+            int r = _random.Next(0, n);
+            int t = array[r];
+            array[r] = array[n];
+            array[n] = t;
+        }
+    }
+
 }

@@ -20,14 +20,13 @@ public class GraspHold : MonoBehaviour
     bool incontact = false;
     bool isGrasped = false; // To track if this object is currently grasped
     static bool globalGraspFlag = false; // Global flag to track if any object is currently grasped
-    Rigidbody rb; 
+    Rigidbody rb;
     Vector3 hand_vel = Vector3.zero;
     Vector3 current_pos, prev_pos;
 
     List<string> cube_pose = new List<string>();
 
-
-    public string path; 
+    public string path;
 
     private void Start()
     {
@@ -52,31 +51,21 @@ public class GraspHold : MonoBehaviour
     {
         grasp_dist = Vector3.Distance(index.position, thumb.position);
 
-        cube_pose.Add(transform.position.x.ToString() +","+ transform.position.y.ToString() + "," + transform.position.z.ToString() + "," + 
+        cube_pose.Add(transform.position.x.ToString() + "," + transform.position.y.ToString() + "," + transform.position.z.ToString() + "," +
                       transform.eulerAngles.x.ToString() + "," + transform.eulerAngles.y.ToString() + "," + transform.eulerAngles.z.ToString() + "," + DateTime.UtcNow.ToString());
-
 
         // Update the position of my_hand to be at the midpoint between index and thumb
         my_hand.transform.position = (index.position + thumb.position) / 2;
-
-        //// Compute the hand velocity, so that we can transfer that to the grasped object
-        //hand_vel = (index.position - prev_pos) / Time.deltaTime;
-        //prev_pos = index.position;
 
         // Calculate the rotation from index to thumb
         Vector3 direction = (thumb.position - index.position).normalized;
         if (direction != Vector3.zero)
         {
             Quaternion rotation = Quaternion.LookRotation(direction);
-            // Assuming Z-axis is forward; if Y-axis should be forward: Quaternion.FromToRotation(Vector3.up, direction)
-            //my_hand.transform.rotation = rotation;
-
-            // Combine with the wrist's rotation
-            my_hand.transform.rotation = wrist.rotation; // * rotation
+            my_hand.transform.rotation = wrist.rotation;
         }
 
         // Handle parenting based on grasp distance and contact
-        
         if (grasp_dist < 0.085f && incontact && !globalGraspFlag)
         {
             transform.parent = my_hand.transform;
@@ -87,12 +76,9 @@ public class GraspHold : MonoBehaviour
         }
         else if (grasp_dist > 0.085f && isGrasped)
         {
-            transform.parent = null;
-            rb.useGravity = true;
-            rb.isKinematic = false;
-            isGrasped = false;
-            globalGraspFlag = false; // Clear the global flag
+            ReleaseObject();
         }
+
         // Check if space key is pressed
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -100,12 +86,27 @@ public class GraspHold : MonoBehaviour
         }
     }
 
+    private void ReleaseObject()
+    {
+        transform.parent = null;
+        rb.isKinematic = false;
+        rb.useGravity = true;  // Re-enable gravity
+        rb.velocity = Vector3.zero; // Reset velocity
+        rb.angularVelocity = Vector3.zero; // Reset angular velocity
+        isGrasped = false;
+        globalGraspFlag = false; // Clear the global flag
+    }
+
+    public void ResetGraspState()
+    {
+        ReleaseObject();
+        incontact = false;
+    }
 
     private void SaveCubePose()
     {
         string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
         string filePath = Path.Combine(path, "cube_pose_" + cubeID + "_" + timestamp + ".csv");
-
 
         try
         {
@@ -136,5 +137,4 @@ public class GraspHold : MonoBehaviour
             Debug.Log("Hand Exit");
         }
     }
-
 }
