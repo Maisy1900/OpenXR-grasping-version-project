@@ -4,30 +4,6 @@ using UnityEngine;
 using System.IO;
 using System;
 
-/// <summary>
-/// StackingTrial Script
-/// 
-/// How to Use:
-/// - Attach this script to a GameObject in your Unity scene.
-/// - Assign the baseCube, midCube, topCube, and planeGuideline references in the Unity Editor.
-/// - Call the RunTrial() method from an external script (e.g., MainSimulator) to reset and start the stacking trial.
-/// - Press the "Y" key during gameplay to manually start or restart the trial.
-///
-/// Success Conditions:
-/// - The trial is considered successful when all three cubes are stacked correctly:
-///   1. The baseCube is aligned with the planeGuideline.
-///   2. The midCube is aligned with the baseCube in both position and rotation.
-///   3. The topCube is aligned with the midCube in both position and rotation.
-/// - Each cube must also be settled (i.e., have a velocity below the threshold) before being locked in place.
-///
-/// Ending the Trial Early:
-/// - Call the EndTrialEarly() method from an external script to end the trial prematurely.
-/// - This will record the current state and finish the trial, even if all cubes are not yet aligned.
-/// 
-/// Multiple Trials:
-/// - The trial can be restarted multiple times by pressing the "Y" key or by calling RunTrial() externally.
-/// - Each time the trial starts, the cubes are reset to their initial positions and states.
-/// </summary>
 public class StackingTrial : MonoBehaviour
 {
     public Transform baseCube, midCube, topCube; // References to the three cubes
@@ -41,14 +17,17 @@ public class StackingTrial : MonoBehaviour
     private int currentStep = 0;
     private const float alignmentThreshold = 0.005f; // 5mm threshold for horizontal alignment
     private const float rotationThreshold = 10f; // 10 degrees threshold for rotation alignment
-    private const float velocityThreshold = 0.001f; // to account for noise 
-
+    private const float velocityThreshold = 0.01f; // Velocity threshold to consider the cube settled
     private string path;
 
     // Flags to check if cubes are locked
     private bool baseCubeLocked = false;
     private bool midCubeLocked = false;
     private bool topCubeLocked = false;
+
+    // Timer variables
+    private float alignTime = 0f;
+    private const float settleTime = 0.5f; // Time to wait before locking a cube after alignment
 
     private void Start()
     {
@@ -73,9 +52,9 @@ public class StackingTrial : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Y))
+        if (Input.GetKeyDown(KeyCode.Y) && !trialActive)
         {
-            RunTrial(); // Allow the trial to be restarted multiple times by pressing "Y"
+            RunTrial(); // Now, pressing "Y" will reset the scene and start the trial
         }
 
         if (trialActive)
@@ -87,7 +66,7 @@ public class StackingTrial : MonoBehaviour
     public void RunTrial()
     {
         ResetCubes(); // Reset the cubes before starting the trial
-        StartTrial();
+        StartTrial(); // Start the trial after resetting the cubes
     }
 
     private void StartTrial()
@@ -95,6 +74,7 @@ public class StackingTrial : MonoBehaviour
         trialActive = true;
         trialStartTime = Time.time;
         currentStep = 1;
+        alignTime = 0f;
         Debug.Log("Trial started.");
     }
 
@@ -153,32 +133,30 @@ public class StackingTrial : MonoBehaviour
         bool isAligned = (currentStep == 1 && alignmentWithGuideline <= alignmentThreshold) ||
                          (currentStep > 1 && alignmentWithPrevious <= alignmentThreshold && isRotationAligned);
 
-        // Detailed debug logs
-        if (currentStep == 1)
-        {
-            Debug.Log($"{currentCube.name} Alignment with Guideline: {alignmentWithGuideline} <= {alignmentThreshold}");
-        }
-        else
-        {
-            Debug.Log($"{currentCube.name} Alignment with Previous: {alignmentWithPrevious} <= {alignmentThreshold}");
-            Debug.Log($"{currentCube.name} Rotation Difference: {rotationDifference} aligned: {isRotationAligned}");
-        }
-
-        // If the cube is aligned, has low velocity, and is not parented, lock it in place and change its color
+        // If aligned and no movement for the settleTime, lock the cube
         if (isAligned && rb.velocity.magnitude <= velocityThreshold && currentCube.parent == null)
         {
-            Debug.Log($"{currentCube.name} is in alignment and settled.");
-            ChangeCubeColor(currentCube, Color.green); // Change color to green when aligned
-            RecordAlignment(currentCube, alignmentWithPrevious, alignmentWithGuideline, rotationDifference);
-            LockCube(currentCube, previousCube);
-            currentStep++;
-            if (currentStep > 3)
+            if (alignTime == 0f)
             {
-                CompleteTrial();
+                alignTime = Time.time;
+                Debug.Log($"{currentCube.name} is aligned. Starting settle timer.");
+            }
+            else if (Time.time - alignTime >= settleTime)
+            {
+                Debug.Log($"{currentCube.name} has been settled for {settleTime} seconds.");
+                LockCube(currentCube);
+                currentStep++;
+                alignTime = 0f;
+                if (currentStep > 3)
+                {
+                    CompleteTrial();
+                }
             }
         }
         else
         {
+            // Reset the timer if not aligned or still moving
+            alignTime = 0f;
             if (rb.velocity.magnitude > velocityThreshold)
             {
                 Debug.Log($"{currentCube.name} is not settled. Velocity: {rb.velocity.magnitude} > {velocityThreshold}");
@@ -192,6 +170,38 @@ public class StackingTrial : MonoBehaviour
                 Debug.Log($"{currentCube.name} is not aligned.");
             }
         }
+    }
+
+    private void LockCube(Transform cube)
+    {
+        Rigidbody rb = cube.GetComponent<Rigidbody>();
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        rb.mass = 10000f; // Set mass to a very high value to prevent movement
+
+        // Optionally, you can also freeze the position and rotation to ensure the cube stays in place
+        rb.constraints = RigidbodyConstraints.FreezeAll;
+
+        if (cube == baseCube)
+        {
+            baseCubeLocked = true;
+        }
+        else if (cube == midCube)
+        {
+            midCubeLocked = true;
+        }
+        else if (cube == topCube)
+        {
+            topCubeLocked = true;
+        }
+
+        Debug.Log($"{cube.name} has been locked in place.");
+
+        // Change color to indicate it's locked
+        ChangeCubeColor(cube, Color.green);
+
+        // Record the alignment results
+        RecordAlignment(cube, 0f, 0f, 0f);  // Adjusted to pass dummy values since these are recalculated inside RecordAlignment
     }
 
     private void ChangeCubeColor(Transform cube, Color color)
@@ -211,68 +221,11 @@ public class StackingTrial : MonoBehaviour
         Debug.Log($"Step {currentStep} completed for {cube.name}. Time: {timestamp} seconds, Alignment with previous: {alignmentWithPrevious}m, Alignment with guideline: {alignmentWithGuideline}m, Rotation difference: {rotationDifference} degrees");
     }
 
-    private void LockCube(Transform cube, Transform previousCube)
-    {
-        Rigidbody rb = cube.GetComponent<Rigidbody>();
-
-        // Check if the cube's Y velocity is close to zero, indicating that it has settled
-        if (Mathf.Abs(rb.velocity.y) > velocityThreshold) // Use a small threshold instead of zero
-        {
-            Debug.Log($"{cube.name} is still moving vertically. Y-Velocity: {rb.velocity.y}");
-            return;
-        }
-
-        // Calculate the target position to ensure the cube is properly aligned vertically
-        Vector3 targetPosition = new Vector3(previousCube.position.x, previousCube.position.y + previousCube.localScale.y / 2 + cube.localScale.y / 2, previousCube.position.z);
-
-        // Ensure the cube is aligned with the previous cube vertically
-        if (Vector3.Distance(cube.position, targetPosition) > alignmentThreshold)
-        {
-            Debug.Log($"{cube.name} is not properly aligned vertically. Applying downward force to settle.");
-            rb.AddForce(Vector3.down * 10f); // Apply a small downward force to help it settle
-            return;
-        }
-
-        // Once the cube is properly settled and aligned, lock it in place
-        rb.isKinematic = true;
-        rb.useGravity = false;
-        rb.mass = 10000f; // Set mass to a very high value to prevent movement
-
-        // Freeze all constraints to ensure the cube stays in place
-        rb.constraints = RigidbodyConstraints.FreezeAll;
-
-        // Mark the cube as locked
-        if (cube == baseCube)
-        {
-            baseCubeLocked = true;
-        }
-        else if (cube == midCube)
-        {
-            midCubeLocked = true;
-        }
-        else if (cube == topCube)
-        {
-            topCubeLocked = true;
-        }
-
-        Debug.Log($"{cube.name} has been locked in place.");
-    }
-
-
-
-
     private void CompleteTrial()
     {
         trialActive = false;
         SaveResults();
         Debug.Log("Trial completed.");
-    }
-
-    public void EndTrialEarly()
-    {
-        // End the trial early if needed, recording current progress
-        Debug.Log("Trial ended early.");
-        CompleteTrial();
     }
 
     private void SaveResults()
@@ -296,6 +249,7 @@ public class StackingTrial : MonoBehaviour
 
     private void ResetCubes()
     {
+        // Reset positions and rotations
         baseCube.position = baseInitialPosition;
         baseCube.rotation = baseInitialRotation;
         midCube.position = midInitialPosition;
@@ -303,23 +257,24 @@ public class StackingTrial : MonoBehaviour
         topCube.position = topInitialPosition;
         topCube.rotation = topInitialRotation;
 
+        // Reset locked states
         baseCubeLocked = false;
         midCubeLocked = false;
         topCubeLocked = false;
 
-        currentStep = 0;
-
-        // Reset the color of the cubes
+        // Reset colors
         ChangeCubeColor(baseCube, Color.white);
         ChangeCubeColor(midCube, Color.white);
         ChangeCubeColor(topCube, Color.white);
 
-        // Unlock the cubes' rigidbodies
+        // Reset physics properties
         UnlockCube(baseCube);
         UnlockCube(midCube);
         UnlockCube(topCube);
 
-        Debug.Log("Cubes reset to initial positions.");
+        currentStep = 0;
+
+        Debug.Log("Cubes reset to initial positions and states.");
     }
 
     private void UnlockCube(Transform cube)
@@ -327,7 +282,7 @@ public class StackingTrial : MonoBehaviour
         Rigidbody rb = cube.GetComponent<Rigidbody>();
         rb.isKinematic = false;
         rb.useGravity = true;
-        rb.mass = 1f; // Restore the mass to a normal value
         rb.constraints = RigidbodyConstraints.None;
+        rb.mass = 1f; // Restore to original mass
     }
 }

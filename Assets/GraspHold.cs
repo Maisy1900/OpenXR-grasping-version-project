@@ -64,7 +64,11 @@ public class GraspHold : MonoBehaviour
             Quaternion rotation = Quaternion.LookRotation(direction);
             my_hand.transform.rotation = wrist.rotation;
         }
-
+        if (gameObject.layer == LayerMask.NameToLayer("Locked"))
+        {
+            // If the object is in the Locked layer, it should not be graspable
+            return;
+        }
         // Handle parenting based on grasp distance and contact
         if (grasp_dist < 0.085f && incontact && !globalGraspFlag)
         {
