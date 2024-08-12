@@ -59,7 +59,7 @@ public class MainExperimentsetup : MonoBehaviour
 
     public ResetPosition[] cubeReseters;
 
-    private Coroutine trial_sequencer; 
+    private Coroutine trial_sequencer;
 
 
     // Function to record results (check if this is a bottleneck)  
@@ -203,7 +203,9 @@ public class MainExperimentsetup : MonoBehaviour
 
 
             // Compute values after anim loop is done 
-            physics_cube_pos_x.Sum(); 
+            physics_cube_pos_x.Sum();
+            physics_cube_pos_y.Sum();
+            physics_cube_pos_z.Sum();
 
 
             Debug.Log("Animation Done");
