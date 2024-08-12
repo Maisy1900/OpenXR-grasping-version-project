@@ -7,16 +7,16 @@ using UnityEngine.UI;
 //using NumpyDotNet; 
 //using NumSharp;
 
-public enum Hand
+public enum Handl
 {
     None,
     Right,
     Left,
 };
 
-public class ArticulationDriver_v2 : MonoBehaviour
+public class ArticulationDriver : MonoBehaviour
 {
-    public Hand handedness = Hand.Right;
+    public Handl handedness = Handl.Right;
 
     // Physics body driver
     public ArticulationBody _palmBody;
@@ -54,12 +54,23 @@ public class ArticulationDriver_v2 : MonoBehaviour
 
     public void MeasureInitialAngles()
     {
-        for (int k = 0; k < driverJoints.Length; k++)
+        //for (int k = 0; k < driverJoints.Length; k++)
+        //{
+        //    initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x;
+        //    initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
+        //    initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
+        //}
+
+        int k = 0;
+        foreach (Transform jointTF in driverJoints)
         {
             initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x;
             initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
             initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
+            k++;
         }
+
+        Debug.LogWarning("Angle measures!!!"); 
     }
 
     void Start()
@@ -181,7 +192,7 @@ public class ArticulationDriver_v2 : MonoBehaviour
             }
             else
             {
-                if(handedness == Hand.Right)
+                if(handedness == Handl.Right)
                     RotateTo(articulationBods[i], ang_targZProx, -ang_targXProx, ang_targYProx);
                 else
                     RotateTo(articulationBods[i],- ang_targZProx, ang_targXProx, ang_targYProx);

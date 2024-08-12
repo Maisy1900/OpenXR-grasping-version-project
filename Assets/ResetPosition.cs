@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ResetPosition : MonoBehaviour
@@ -30,7 +31,21 @@ public class ResetPosition : MonoBehaviour
             transform.position = initialPosition;
             transform.rotation = initialRotation;
         }
+        if(collision.gameObject.tag == "idx_tip")
+        {
+            
+        }
     }
+
+    public void ResetCubes()
+    {
+        transform.position = initialPosition;
+        transform.rotation = initialRotation;
+    }
+
+
+    // Add code to detect contact which cube is being touched to tell the MainExperimentsetup 
+    
 
 
 }

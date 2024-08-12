@@ -10,18 +10,19 @@ public class liftingTrial : MonoBehaviour
 {
     private Vector3 initialPosition;
     private Quaternion initialRotation;
-    private Rigidbody rb;
+    public Rigidbody rb; 
     private bool trialActive = false;
     private float trialStartTime;
     private bool trialCompleted = false;
     public float targetHeight = 0.6f; // 60 cm
-    private GraspHold graspHoldScript;
+    public GraspHold graspHoldScript;
 
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        graspHoldScript = GetComponent<GraspHold>();
+        //rb = GetComponent<Rigidbody>();
+        //graspHoldScript = GetComponent<GraspHold>();
+
 
         initialPosition = transform.position;
         initialRotation = transform.rotation;

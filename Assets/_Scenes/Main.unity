@@ -614,6 +614,51 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 34986554}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &58268243
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 58268244}
+  - component: {fileID: 58268245}
+  m_Layer: 0
+  m_Name: Test_Anim_Play
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &58268244
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 58268243}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &58268245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 58268243}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b91c63423cccf4941ade81ebd467eece, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainAnim: {fileID: 7942851921515323397}
 --- !u!1 &63997952
 GameObject:
   m_ObjectHideFlags: 0
@@ -2675,7 +2720,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 279149595}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f28ebb2437808f046af51be3727e9b7c, type: 3}
   m_Name: 
@@ -2684,6 +2729,7 @@ MonoBehaviour:
   thumb: {fileID: 5904269318182307560}
   wrist: {fileID: 5380508159221933227}
   cubeID: Middle
+  rb: {fileID: 279149602}
   path: C:\Users\VR-Lab\Documents\Projects\OpenXR grasping version\Assets\Recordings
 --- !u!114 &279149598
 MonoBehaviour:
@@ -8245,127 +8291,6 @@ ArticulationBody:
   m_Immovable: 0
   m_UseGravity: 1
   m_CollisionDetectionMode: 1
---- !u!114 &665386581
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 491124902009685364}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0eec6d55aba3d74a86d5656a486a01f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  handedness: 1
-  _palmBody: {fileID: 665386580}
-  driverHand: {fileID: 5380508159221933227}
-  driverJoints:
-  - {fileID: 5534071763351179376}
-  - {fileID: 4084537551828608023}
-  - {fileID: 8570956836965476127}
-  - {fileID: 4237996584719053957}
-  - {fileID: 5863662515028453073}
-  - {fileID: 4504355644977907894}
-  - {fileID: 5464728789741840102}
-  - {fileID: 1164271282703421209}
-  - {fileID: 7497891843514816257}
-  - {fileID: 2790755815989006362}
-  - {fileID: 75349190033604054}
-  - {fileID: 835492053894164741}
-  - {fileID: 5206732613511798460}
-  - {fileID: 7869076601835017604}
-  - {fileID: 7577101728655073454}
-  articulationBods:
-  - {fileID: 1380162280}
-  - {fileID: 733402774}
-  - {fileID: 1412429538}
-  - {fileID: 2099360997}
-  - {fileID: 1951463887}
-  - {fileID: 1656194551}
-  - {fileID: 1220994056}
-  - {fileID: 278292566}
-  - {fileID: 1267069193}
-  - {fileID: 1631517170}
-  - {fileID: 1785542329}
-  - {fileID: 255340496}
-  - {fileID: 934101356}
-  - {fileID: 707922165}
-  - {fileID: 25206550}
-  driverHandRoot: {fileID: 5380508159221933227}
-  driverHandOffset: {x: 0, y: 0, z: 0}
-  rotataionalOffset: {x: 0, y: 0, z: 0}
-  _capsuleColliders:
-  - {fileID: 1380162279}
-  - {fileID: 733402773}
-  - {fileID: 1412429537}
-  - {fileID: 2099360996}
-  - {fileID: 1951463886}
-  - {fileID: 1656194550}
-  - {fileID: 1220994055}
-  - {fileID: 278292565}
-  - {fileID: 1267069192}
-  - {fileID: 1631517169}
-  - {fileID: 1785542328}
-  - {fileID: 255340495}
-  - {fileID: 934101355}
-  - {fileID: 707922164}
-  - {fileID: 25206549}
-  _palmColliders:
-  - {fileID: 665386579}
-  infoText: {fileID: 294008405}
-  angleDisplayText: {fileID: 0}
-  xoffset: 0
-  yoffset: 0
-  XOffsets:
-  - -4
-  - 0
-  - 0
-  - -4
-  - 0
-  - 0
-  - 12
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 13
-  - 0
-  - 0
-  YOffsets:
-  - 14
-  - 0
-  - 0
-  - -1
-  - 0
-  - 0
-  - -12
-  - 0
-  - 0
-  - -9
-  - 0
-  - 0
-  - 1
-  - 0
-  - 0
-  ZOffsets:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - -20
-  - 0
-  - 0
-  angle: 0
 --- !u!1 &687982844
 GameObject:
   m_ObjectHideFlags: 0
@@ -11949,7 +11874,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 916794102}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f28ebb2437808f046af51be3727e9b7c, type: 3}
   m_Name: 
@@ -11958,6 +11883,7 @@ MonoBehaviour:
   thumb: {fileID: 5904269318182307560}
   wrist: {fileID: 5380508159221933227}
   cubeID: Base
+  rb: {fileID: 916794112}
   path: C:\Users\VR-Lab\Documents\Projects\OpenXR grasping version\Assets\Recordings
 --- !u!111 &916794117
 Animation:
@@ -11987,7 +11913,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad7252ec7d9d71c4f8dec6641deacd48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 916794112}
   targetHeight: 0.6
+  graspHoldScript: {fileID: 916794116}
 --- !u!114 &916794119
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16187,15 +16115,33 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1288394536}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c6087ba5aed500c48b02cb950d197166, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  number_of_simulations: 10
+  number_of_simulation_blocks: 5
   articulationObject: {fileID: 491124902009685364}
+  articulationDriver_real: {fileID: 2468282021287444959}
   cubeObj: {fileID: 0}
-  animationz: []
+  stack: {fileID: 1637213928}
+  lift: {fileID: 916794118}
+  pushing: {fileID: 916794119}
+  main_anim: {fileID: 7942851921515323397}
+  animation_names:
+  - lift_1
+  - lift_2
+  - lift_3
+  - push_1
+  - push_2
+  - push_3
+  - stack_1
+  - stack_2
+  - stack_3
+  cubeReseters:
+  - {fileID: 916794114}
+  - {fileID: 279149600}
+  - {fileID: 1412766535}
 --- !u!4 &1288394538
 Transform:
   m_ObjectHideFlags: 0
@@ -17230,7 +17176,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1412766530}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f28ebb2437808f046af51be3727e9b7c, type: 3}
   m_Name: 
@@ -17239,6 +17185,7 @@ MonoBehaviour:
   thumb: {fileID: 5904269318182307560}
   wrist: {fileID: 5380508159221933227}
   cubeID: Top
+  rb: {fileID: 1412766537}
   path: C:\Users\VR-Lab\Documents\Projects\OpenXR grasping version\Assets\Recordings
 --- !u!114 &1412766533
 MonoBehaviour:
@@ -19735,7 +19682,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1637213927}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 326d3543f8b68404b95cbebe4bf4b611, type: 3}
   m_Name: 
@@ -24388,14 +24335,14 @@ GameObject:
   - component: {fileID: 2468282021287444958}
   - component: {fileID: 665386580}
   - component: {fileID: 665386579}
-  - component: {fileID: 665386581}
+  - component: {fileID: 2468282021287444959}
   m_Layer: 6
   m_Name: R_Wrist
   m_TagString: RightHandDoNotUse
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!137 &683117892138097326
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
@@ -25400,7 +25347,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4504355644977907894}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -0, y: 0, z: 0}
 --- !u!1 &1125635294122770655
 GameObject:
   m_ObjectHideFlags: 0
@@ -25879,7 +25826,7 @@ Transform:
   m_Children:
   - {fileID: 2790755815989006362}
   m_Father: {fileID: 5380508159221933227}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -0, y: 0, z: 0}
 --- !u!1 &2324865577398088001
 GameObject:
   m_ObjectHideFlags: 0
@@ -25998,6 +25945,126 @@ Transform:
   - {fileID: 4173005202789584190}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -60, y: 0, z: 0}
+--- !u!114 &2468282021287444959
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 491124902009685364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e236eb0265a2d0458e3d776cebf5a1c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  handedness: 1
+  _palmBody: {fileID: 665386580}
+  driverHand: {fileID: 5380508159221933227}
+  driverJoints:
+  - {fileID: 5534071763351179376}
+  - {fileID: 4084537551828608023}
+  - {fileID: 8570956836965476127}
+  - {fileID: 4237996584719053957}
+  - {fileID: 5863662515028453073}
+  - {fileID: 4504355644977907894}
+  - {fileID: 5464728789741840102}
+  - {fileID: 1164271282703421209}
+  - {fileID: 7497891843514816257}
+  - {fileID: 2790755815989006362}
+  - {fileID: 75349190033604054}
+  - {fileID: 835492053894164741}
+  - {fileID: 5206732613511798460}
+  - {fileID: 7869076601835017604}
+  - {fileID: 7577101728655073454}
+  articulationBods:
+  - {fileID: 1380162280}
+  - {fileID: 733402774}
+  - {fileID: 1412429538}
+  - {fileID: 2099360997}
+  - {fileID: 1951463887}
+  - {fileID: 1656194551}
+  - {fileID: 1220994056}
+  - {fileID: 278292566}
+  - {fileID: 1267069193}
+  - {fileID: 1631517170}
+  - {fileID: 1785542329}
+  - {fileID: 255340496}
+  - {fileID: 934101356}
+  - {fileID: 707922165}
+  - {fileID: 25206550}
+  driverHandRoot: {fileID: 5380508159221933227}
+  driverHandOffset: {x: 0, y: 0, z: 0}
+  rotataionalOffset: {x: 0, y: 0, z: 0}
+  _capsuleColliders:
+  - {fileID: 1380162279}
+  - {fileID: 733402773}
+  - {fileID: 1412429537}
+  - {fileID: 2099360996}
+  - {fileID: 1951463886}
+  - {fileID: 1656194550}
+  - {fileID: 1220994055}
+  - {fileID: 278292565}
+  - {fileID: 1267069192}
+  - {fileID: 1631517169}
+  - {fileID: 1785542328}
+  - {fileID: 255340495}
+  - {fileID: 934101355}
+  - {fileID: 707922164}
+  - {fileID: 25206549}
+  _palmColliders:
+  - {fileID: 665386579}
+  infoText: {fileID: 294008405}
+  xoffset: 15
+  yoffset: 15
+  XOffsets:
+  - -4
+  - 0
+  - 0
+  - -4
+  - 0
+  - 0
+  - 12
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 13
+  - 0
+  - 0
+  YOffsets:
+  - 14
+  - 0
+  - 0
+  - -1
+  - 0
+  - 0
+  - -12
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 1
+  - 0
+  - 0
+  ZOffsets:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - -20
+  - 0
+  - 0
+  angle: 0
 --- !u!1 &2509985185564652041
 GameObject:
   m_ObjectHideFlags: 0
@@ -27615,7 +27682,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8570956836965476127}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -0, y: 0, z: 0}
 --- !u!135 &4992640111494142288
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -27633,7 +27700,7 @@ SphereCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Radius: 0.01
   m_Center: {x: 0, y: 0, z: 0}
@@ -27948,7 +28015,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5380508159221933227}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -0, y: 0, z: 0}
 --- !u!114 &5566249454772342744
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28106,7 +28173,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7577101728655073454}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -0, y: 0, z: 0}
 --- !u!135 &5904269318182307561
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -28124,7 +28191,7 @@ SphereCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Radius: 0.0075
   m_Center: {x: 0, y: 0, z: 0}
@@ -28381,7 +28448,7 @@ Transform:
   m_Children:
   - {fileID: 5534071763351179376}
   m_Father: {fileID: 5380508159221933227}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -0, y: 0, z: 0}
 --- !u!1 &6841513783026735883
 GameObject:
   m_ObjectHideFlags: 0
@@ -28527,7 +28594,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7497891843514816257}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -0, y: 0, z: 0}
 --- !u!1 &7454989640077239722
 GameObject:
   m_ObjectHideFlags: 0
@@ -28960,6 +29027,7 @@ GameObject:
   - component: {fileID: 7942851921515323394}
   - component: {fileID: 7942851921515323395}
   - component: {fileID: 7942851921515323396}
+  - component: {fileID: 7942851921515323397}
   m_Layer: 6
   m_Name: R_Wrist
   m_TagString: Untagged
@@ -29132,24 +29200,35 @@ Animation:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7942851921515323393}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Animation: {fileID: 7400000, guid: 9858219602238cd46a8ffa31cf17cba4, type: 2}
-  m_Animations:
-  - {fileID: 7400000, guid: 9858219602238cd46a8ffa31cf17cba4, type: 2}
-  - {fileID: 7400000, guid: c2048616a3c9119429dea12df6eff409, type: 2}
-  - {fileID: 7400000, guid: 7ff769989961a4a4eb1ff48742092cc7, type: 2}
-  - {fileID: 7400000, guid: e42c59d24f908a44f8dac35b83ae3c3a, type: 2}
-  - {fileID: 7400000, guid: 07a1abf9bde57954c8976fd953b80f36, type: 2}
-  - {fileID: 7400000, guid: e46a6d29db835a34ebc5cdb88582b586, type: 2}
-  - {fileID: 7400000, guid: 2d35a2e61d5af8a42bb0c6b5259b99bd, type: 2}
-  - {fileID: 7400000, guid: 0f3100dafc25775479df9fdff2d35f86, type: 2}
-  - {fileID: 7400000, guid: 4128e7410fca20d41928a3f4015b974f, type: 2}
-  - {fileID: 7400000, guid: 464c2bf930ba20d418b485a6d7a501e1, type: 2}
+  m_Animations: []
   m_WrapMode: 0
-  m_PlayAutomatically: 1
+  m_PlayAutomatically: 0
   m_AnimatePhysics: 0
   m_CullingType: 0
+--- !u!95 &7942851921515323397
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7942851921515323393}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 5d6bb7c64d7a58e419b2b8567a59421f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &7963945531405436042
 GameObject:
   m_ObjectHideFlags: 0
@@ -29231,7 +29310,7 @@ Transform:
   m_Children:
   - {fileID: 4237996584719053957}
   m_Father: {fileID: 5380508159221933227}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -0, y: 0, z: 0}
 --- !u!1 &8423613948213630116
 GameObject:
   m_ObjectHideFlags: 0
@@ -29624,7 +29703,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 835492053894164741}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -29653,3 +29732,4 @@ SceneRoots:
   - {fileID: 920926797}
   - {fileID: 1637213929}
   - {fileID: 1288394538}
+  - {fileID: 58268244}

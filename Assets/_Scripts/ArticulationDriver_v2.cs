@@ -6,17 +6,17 @@ using TMPro;
 //using NumpyDotNet; 
 //using NumSharp;
 
-public enum Hand
+public enum Hands
 {
     None,
     Right,
     Left,
 };
 
-public class ArticulationDriver : MonoBehaviour
+public class ArticulationDriver_v2 : MonoBehaviour
 {
 
-    public Hand handedness = Hand.Right;
+    public Hands handedness = Hands.Right;
 
     // Physics body driver
     public ArticulationBody _palmBody;
@@ -135,7 +135,7 @@ public class ArticulationDriver : MonoBehaviour
             if (driverJoints[i].name.Contains("thumb"))
             {
                 // For the left and right hand thumb joint 0 the direction in one of the axis is reversed 
-                if (handedness == Hand.Right)
+                if (handedness == Hands.Right)
                 {
                     if (driverJoints[i].name.Contains("thumb0"))
                     {
@@ -173,7 +173,7 @@ public class ArticulationDriver : MonoBehaviour
                         ang_targX = map(xTargetAngle, 380f, 300f, -40f, 80f);
                     }
                 }
-                else if (handedness == Hand.Left)
+                else if (handedness == Hands.Left)
                 {
                     if (driverJoints[i].name.Contains("thumb0"))
                     {
@@ -212,7 +212,7 @@ public class ArticulationDriver : MonoBehaviour
                     }
                 }
 
-                    RotateTo(articulationBods[i], ang_targX, ang_targY);
+                RotateTo(articulationBods[i], ang_targX, ang_targY);
             }
             else
             {
