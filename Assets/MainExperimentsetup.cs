@@ -309,6 +309,15 @@ public class MainExperimentsetup : MonoBehaviour
             array[n] = t;
         }
     }
+    void fitness()
+    {
+        //A lower difference could correspond to a higher fitness score.
+        /*
+        Compare with Preprocessed Data:
 
+        The CompareWithPreprocessedData method compares the current position and rotation of the cube with the preprocessed data from the CSV.
+        The Vector3.Distance function is used to measure the difference in position, and Quaternion.Angle is used to measure the difference in rotation.
+        */
+    }
 
 }
