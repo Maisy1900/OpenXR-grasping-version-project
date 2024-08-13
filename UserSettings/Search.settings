@@ -8,6 +8,11 @@ onBoardingDoNotAskAgain = true
 showPackageIndexes = false
 showStatusBar = false
 scopes = {
+	"picker_window_position_offset.D845A788" = "-788;179;694;550"
+	"picker_search_text.D845A788" = "gr"
+	"last_search.D845A788" = "gr"
+	"OpenInspectorPreview.D845A788" = "0"
+	"currentGroup.D845A788" = "all"
 }
 providers = {
 	scene = {

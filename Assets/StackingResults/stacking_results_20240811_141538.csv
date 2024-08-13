@@ -1,0 +1,4 @@
+Step,Cube,PositionX,PositionY,PositionZ,AlignmentWithPrevious,AlignmentWithGuideline,RotationAlignment,Timestamp
+1,Base,0.1672529,0.7803001,0.07125621,0,0,0,4.027601
+2,Middle,0.1653194,0.8303001,0.06764577,0,0,0,7.723579
+3,Top,0.1655969,0.8803001,0.06994873,0,0,0,12.51503

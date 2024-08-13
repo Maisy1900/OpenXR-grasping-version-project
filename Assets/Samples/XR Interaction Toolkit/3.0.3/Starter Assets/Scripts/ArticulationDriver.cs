@@ -7,7 +7,7 @@ using UnityEngine.UI;
 //using NumpyDotNet; 
 //using NumSharp;
 
-public enum Hand
+public enum Handl
 {
     None,
     Right,
@@ -16,8 +16,7 @@ public enum Hand
 
 public class ArticulationDriver : MonoBehaviour
 {
-
-    public Hand handedness = Hand.Right;
+    public Handl handedness = Handl.Right;
 
     // Physics body driver
     public ArticulationBody _palmBody;
@@ -49,14 +48,35 @@ public class ArticulationDriver : MonoBehaviour
     [Range(-90f, 90f)]
     public float angle = 0f;
 
+    float[] initialXAngles = new float[15];
+    float[] initialYAngles = new float[15];
+    float[] initialZAngles = new float[15];
+
+    public void MeasureInitialAngles()
+    {
+        //for (int k = 0; k < driverJoints.Length; k++)
+        //{
+        //    initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x;
+        //    initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
+        //    initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
+        //}
+
+        int k = 0;
+        foreach (Transform jointTF in driverJoints)
+        {
+            initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x;
+            initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
+            initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
+            k++;
+        }
+
+        Debug.LogWarning("Angle measures!!!"); 
+    }
+
     void Start()
     {
         thisArticulation = GetComponent<ArticulationBody>();
     }
-
-    float[] initialXAngles = new float[15];
-    float[] initialYAngles = new float[15];
-    float[] initialZAngles = new float[15];
 
     void FixedUpdate()
     {
@@ -172,22 +192,13 @@ public class ArticulationDriver : MonoBehaviour
             }
             else
             {
-                if(handedness == Hand.Right)
+                if(handedness == Handl.Right)
                     RotateTo(articulationBods[i], ang_targZProx, -ang_targXProx, ang_targYProx);
                 else
                     RotateTo(articulationBods[i],- ang_targZProx, ang_targXProx, ang_targYProx);
             }
         }
         #endregion
-    }
-    void MeasureInitialAngles()
-    {
-        for (int k = 0; k < driverJoints.Length; k++)
-        {
-            initialXAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.x;
-            initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
-            initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
-        }
     }
 
     float NormalizeAngle(float angle)

@@ -26,6 +26,13 @@ TagManager:
   - xyrotations
   - xyzrotations
   - xrotations
+  - Floor
+  - projectile
+  - FxTemporaire
+  - idx_tip
+  - tmb_tip
+  - Checkpoint
+  - RightHandDoNotUse
   layers:
   - Default
   - TransparentFX
@@ -34,7 +41,7 @@ TagManager:
   - Water
   - UI
   - NoSelfContact
-  - 
+  - 'Locked '
   - 
   - 
   - 
