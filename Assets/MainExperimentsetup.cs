@@ -245,28 +245,6 @@ public class MainExperimentsetup : MonoBehaviour
         //collect the time at which the cube first moves, store a list of the cube states at each point within the animation 
 
     }
-    public struct CubeState
-    {
-        public Vector3 Position;
-        public Quaternion Rotation;
-        public float Time;
-    }
-    public (float time, Vector3 position, Quaternion rotation) DetectMovementStart(
-    List<float> timeStamps,
-    List<Vector3> cubePositions,
-    List<Quaternion> cubeRotations,
-    float movementThreshold = 0.01f)
-    {
-        for (int i = 1; i < cubePositions.Count; i++)
-        {
-            if (Vector3.Distance(cubePositions[i], cubePositions[i - 1]) > movementThreshold)
-            {
-                return (timeStamps[i], cubePositions[i], cubeRotations[i]);
-            }
-        }
-        return (timeStamps[0], cubePositions[0], cubeRotations[0]); // Default to the first data point if no significant movement is detected
-    }
-
 
     public float calculateDistannces()
     {
