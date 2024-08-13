@@ -319,5 +319,9 @@ public class MainExperimentsetup : MonoBehaviour
         The Vector3.Distance function is used to measure the difference in position, and Quaternion.Angle is used to measure the difference in rotation.
         */
     }
-
+    public void CubeTouched(GameObject touchedCube)
+    {
+        // Logic to handle when a cube is touched
+        Debug.Log("Cube touched: " + touchedCube.name);
+    }
 }
