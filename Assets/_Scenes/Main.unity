@@ -16115,12 +16115,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1288394536}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c6087ba5aed500c48b02cb950d197166, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  number_of_simulation_blocks: 5
+  number_of_simulation_blocks: 10
   articulationObject: {fileID: 491124902009685364}
   articulationDriver_real: {fileID: 2468282021287444959}
   cubeObj: {fileID: 0}
@@ -16142,6 +16142,22 @@ MonoBehaviour:
   - {fileID: 916794114}
   - {fileID: 279149600}
   - {fileID: 1412766535}
+  csvPaths:
+  - 'Assets/CSVFiles/lift_1_preprocessed '
+  - 'Assets/CSVFiles/lift_2_preprocessed '
+  - 'Assets/CSVFiles/lift_3_preprocessed '
+  - 'Assets/CSVFiles/push_1_preprocessed '
+  - 'Assets/CSVFiles/push_2_preprocessed '
+  - 'Assets/CSVFiles/push_3_preprocessed '
+  - 'Assets/CSVFiles/stack_base_1_preprocessed '
+  - 'Assets/CSVFiles/stack_middle_1_preprocessed '
+  - 'Assets/CSVFiles/stack_top_1_preprocessed '
+  - 'Assets/CSVFiles/stack_base_2_preprocessed '
+  - 'Assets/CSVFiles/stack_middle_2_preprocessed '
+  - 'Assets/CSVFiles/stack_top_2_preprocessed '
+  - 'Assets/CSVFiles/stack_base_3_preprocessed '
+  - 'Assets/CSVFiles/stack_middle_3_preprocessed '
+  - 'Assets/CSVFiles/stack_top_3_preprocessed '
 --- !u!4 &1288394538
 Transform:
   m_ObjectHideFlags: 0
@@ -20195,7 +20211,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1688519555}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2be2a4c3ca212ab429501d3e7611b761, type: 3}
   m_Name: 

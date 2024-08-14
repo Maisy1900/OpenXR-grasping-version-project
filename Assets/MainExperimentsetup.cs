@@ -60,7 +60,9 @@ public class MainExperimentsetup : MonoBehaviour
     public ResetPosition[] cubeReseters;
 
     private Coroutine trial_sequencer;
-
+    // Dictionary to store the preprocessed data
+    private Dictionary<string, List<CubeState>> preprocessedData;
+    public string[] csvPaths; 
 
     // Function to record results (check if this is a bottleneck)  
     void RecordResults(Vector3 cubePosition, Vector3 handPose, float timing, int trialNumber)
@@ -76,6 +78,80 @@ public class MainExperimentsetup : MonoBehaviour
 
 
     }
+    public struct CubeState
+    {
+        public Vector3 Position; //xyz corrds
+        public Quaternion Rotation; //rotation values
+        public float Time;
+    }
+    void PreprocessCSVFile(string csvPath){
+        List<CubeState> cubeStates = new List<CubeState>();
+        string[] csvLines = File.ReadAllLines(csvPath);
+        DateTime beginning_timestamp = DateTime.Parse(csvLines[1].Split(',')[6]);
+        //throw away header column
+        for (int i = 1; i < csvLines.Length; i++){
+            string[] columns = csvLines[i].Split(',');
+
+            if (columns.Length < 7) continue; 
+            // Parse position
+            Vector3 position = new Vector3(
+                float.Parse(columns[0]),//x
+                float.Parse(columns[1]),//y
+                float.Parse(columns[2])//z
+            );
+
+            // Parse rotation as Euler angles and convert to Quaternion
+            Vector3 eulerRotation = new Vector3(
+                float.Parse(columns[3]),
+                float.Parse(columns[4]),
+                float.Parse(columns[5])
+            );
+            Quaternion rotation = Quaternion.Euler(eulerRotation);
+
+            // Parse timestamp
+            DateTime timeStamp = DateTime.Parse(columns[6]);
+            float time = (float)(timeStamp - beginning_timestamp).TotalSeconds;
+
+            // Create a new CubeState and add it to the list
+            CubeState state = new CubeState
+            {
+                Position = position,
+                Rotation = rotation,
+                Time = time
+            };
+            cubeStates.Add(state);
+        }
+
+        // Store or process the preprocessed cube states as needed
+        preprocessedData[csvPath] = cubeStates;
+    }
+
+    /* record the cubes position and rotation at each timestep
+    
+    public List<CubeState> TrackSimulationData(Transform cubeTransform, float normedTime)
+    {
+        List<CubeState> simulationData = new List<CubeState>();
+
+        float time = 0f;
+        while (normedTime< 1simulation running)
+        {
+            simulationData.Add(new CubeState
+            {
+                Position = cubeTransform.position,
+                Rotation = cubeTransform.rotation,
+                Time = DateTime.Now // You might use another method to get time or normalized time
+            });
+
+            // Wait for the next frame
+            yield return new WaitForFixedUpdate();
+            time += Time.fixedDeltaTime;
+        }
+
+        return simulationData;
+    }
+    */
+
+
     void SaveDataFile()
     {
         // Write results to CSV/JSON file
@@ -87,8 +163,15 @@ public class MainExperimentsetup : MonoBehaviour
     {
         // Read all cube animation data files (.csv)
         // And put these into float arrays e.g. cube_pos_x[0][0], or cube_rot_y
-                                              // obj  [task_index] [animation_index]
+        // obj  [task_index] [animation_index]
+        // Initialize the dictionary
+        preprocessedData = new Dictionary<string, List<CubeState>>();
 
+        // Preprocess each CSV file
+        foreach (string csvPath in csvPaths)
+        {
+            PreprocessCSVFile(csvPath);
+        }
 
         main_anim.StopPlayback();
 
@@ -112,7 +195,7 @@ public class MainExperimentsetup : MonoBehaviour
 
         // Convert the list back to an array and assign it to the animationz variable
         shuffled_anim_indices = expandedAnimations.ToArray();
-        
+
 
         // Now shuffle this expanded array
         Shuffle(shuffled_anim_indices);
@@ -121,10 +204,10 @@ public class MainExperimentsetup : MonoBehaviour
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
             // Start the trials
-            if (trial_sequencer!=null)
+            if (trial_sequencer != null)
                 StopCoroutine(trial_sequencer);
             trial_sequencer = StartCoroutine(ConductTrials());
         }
@@ -154,7 +237,7 @@ public class MainExperimentsetup : MonoBehaviour
             cubeReseters[2].ResetCubes();
 
             Debug.Log("Trial: " + i.ToString() + " out of: " + number_of_simulations.ToString());
-            Debug.Log("Anim index: " + shuffled_anim_indices[i].ToString()); 
+            Debug.Log("Anim index: " + shuffled_anim_indices[i].ToString());
             Debug.Log("Anim: " + animation_names[shuffled_anim_indices[i]]);
 
             // Setup physics parameters for this trial
@@ -163,7 +246,7 @@ public class MainExperimentsetup : MonoBehaviour
             Physics.defaultContactOffset = 0.01f; // [0.001,0.1]
             Physics.defaultMaxDepenetrationVelocity = 10; // [1-100]
             Physics.bounceThreshold = 2; // [0.1-4]
-            Debug.Log("Physics parameters adjusted!"); 
+            Debug.Log("Physics parameters adjusted!");
 
             // Play the corresponding animation
             main_anim.Play(animation_names[shuffled_anim_indices[i]], 0);
@@ -176,15 +259,19 @@ public class MainExperimentsetup : MonoBehaviour
 
             // Wait for the animation to complete
             float normedTime = 0f;
-            while(normedTime < 1)
+            while (normedTime < 1)
             {
                 // The next part is only for the optimisation algorithm 
                 // ************************************************************************
                 // ********************* OPTIMIZATION ALGORITHM ***************************
                 // ************************************************************************
-                physics_cube_pos_x.Add(cubeReseters[0].transform.position.x);
-                physics_cube_pos_y.Add(cubeReseters[0].transform.position.y);
-                physics_cube_pos_z.Add(cubeReseters[0].transform.position.z);
+                if (true/*cube has moved*/)
+                {
+                    physics_cube_pos_x.Add(cubeReseters[0].transform.position.x);
+                    physics_cube_pos_y.Add(cubeReseters[0].transform.position.y);
+                    physics_cube_pos_z.Add(cubeReseters[0].transform.position.z);
+                }
+
 
                 // TODO: Compute results after each trial (this means calculating the distances between the current position and the recorded (animation) position of the cube)
                 //match the positions based on when the cube begins to move and the final position of the cubes, we are looking to minimise the position. 
@@ -198,7 +285,7 @@ public class MainExperimentsetup : MonoBehaviour
 
 
                 normedTime = main_anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
-                yield return null; 
+                yield return null;
             }
 
 
@@ -213,7 +300,7 @@ public class MainExperimentsetup : MonoBehaviour
 
             // Optionally, add a short delay between trials
             yield return new WaitForSeconds(1.0f);
-            Debug.Log("Trial " + i + " done"); 
+            Debug.Log("Trial " + i + " done");
         }
 
         // Record data into a file (not essential)
@@ -222,17 +309,7 @@ public class MainExperimentsetup : MonoBehaviour
         yield return null;
 
     }
-    public int DetectMovementStartIndex(List<Vector3> cubePositions, float movementThreshold = 0.01f)
-    {
-        for (int i = 1; i < cubePositions.Count; i++)
-        {
-            if (Vector3.Distance(cubePositions[i], cubePositions[i - 1]) > movementThreshold)
-            {
-                return i;
-            }
-        }
-        return 0;
-    }
+
     /*each animation is played once 
      * cubes rotation and position are sampled at regular intervals 
      * collected in a list called cube states which contains the cube's position, rotation, and the corresponding timestamp within the animation.
