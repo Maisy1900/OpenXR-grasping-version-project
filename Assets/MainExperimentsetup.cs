@@ -1,4 +1,3 @@
-using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -8,6 +7,7 @@ using MathNet.Numerics.LinearAlgebra.Storage;
 using Unity.VisualScripting;
 using System;
 using System.Linq;
+using UnityEngine;
 
 class DataClass
 {
@@ -62,7 +62,7 @@ public class MainExperimentsetup : MonoBehaviour
     private Coroutine trial_sequencer;
     // Dictionary to store the preprocessed data
     private Dictionary<string, List<CubeState>> preprocessedData;
-    public string[] csvPaths; 
+    public string[] csvPaths;
 
     // Function to record results (check if this is a bottleneck)  
     void RecordResults(Vector3 cubePosition, Vector3 handPose, float timing, int trialNumber)
@@ -84,15 +84,17 @@ public class MainExperimentsetup : MonoBehaviour
         public Quaternion Rotation; //rotation values
         public float Time;
     }
-    void PreprocessCSVFile(string csvPath){
+    void PreprocessCSVFile(string csvPath)
+    {
         List<CubeState> cubeStates = new List<CubeState>();
         string[] csvLines = File.ReadAllLines(csvPath);
         DateTime beginning_timestamp = DateTime.Parse(csvLines[1].Split(',')[6]);
         //throw away header column
-        for (int i = 1; i < csvLines.Length; i++){
+        for (int i = 1; i < csvLines.Length; i++)
+        {
             string[] columns = csvLines[i].Split(',');
 
-            if (columns.Length < 7) continue; 
+            if (columns.Length < 7) continue;
             // Parse position
             Vector3 position = new Vector3(
                 float.Parse(columns[0]),//x
@@ -161,6 +163,7 @@ public class MainExperimentsetup : MonoBehaviour
     }
     void Start()
     {
+
         // Read all cube animation data files (.csv)
         // And put these into float arrays e.g. cube_pos_x[0][0], or cube_rot_y
         // obj  [task_index] [animation_index]
@@ -252,7 +255,34 @@ public class MainExperimentsetup : MonoBehaviour
             main_anim.Play(animation_names[shuffled_anim_indices[i]], 0);
             bool animstate = main_anim.GetCurrentAnimatorStateInfo(0).IsName(animation_names[shuffled_anim_indices[i]]);
             Debug.Log("Animation playing!");
+            //match the current animation with the csv file of desired locations
+            //csvs 0-5 we can use [i] 6-14
+            if (i >= 0 && i <= 5)
+            {
+                // For lifting and pushing animations (index 0-5)
+                string csvKey = csvPaths[i];
+                List<CubeState> cubeStates = preprocessedData[csvKey];
 
+                // Use cubeStates in your simulation or trial logic
+            }
+            else if (i >= 6 && i < 9)
+            {
+                // For stacking animations (index 6-8)
+
+                // First cube (base) bases can either be 6 when i=6, 9 when i=7, or 12 when i=8
+                string baseCsvKey = csvPaths[6 + (i - 6) * 3];  // Correctly indexing into the base CSV
+                List<CubeState> baseCubeStates = preprocessedData[baseCsvKey];
+
+                // Second cube (middle) can either be 7 when i=6, 10 when i=7, or 13 when i=8
+                string middleCsvKey = csvPaths[7 + (i - 6) * 3];  // Correctly indexing into the middle CSV
+                List<CubeState> middleCubeStates = preprocessedData[middleCsvKey];
+
+                // Third cube (top) can either be 8 when i=6, 11 when i=7, or 14 when i=8
+                string topCsvKey = csvPaths[8 + (i - 6) * 3];  // Correctly indexing into the top CSV
+                List<CubeState> topCubeStates = preprocessedData[topCsvKey];
+
+                // Use baseCubeStates, middleCubeStates, and topCubeStates in your simulation or trial logic
+            }
             List<float> physics_cube_pos_x = new List<float>();
             List<float> physics_cube_pos_y = new List<float>();
             List<float> physics_cube_pos_z = new List<float>();
