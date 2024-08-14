@@ -33,14 +33,14 @@ public class ResetPosition : MonoBehaviour
     {
         if (collision.gameObject.tag == "Floor")
         {
+            // Reset the position when the cube hits the floor
             transform.position = initialPosition;
             transform.rotation = initialRotation;
         }
 
         if (collision.gameObject.tag == "idx_tip")
         {
-            // Notify the MainExperimentsetup script that this cube was touched
-            //cube collides with an object tagged as "idx_tip" (presumably the fingertip or tool touching the cube), it triggers the CubeTouched method on the MainExperimentsetup script.
+            // Notify MainExperimentsetup that the cube was touched
             if (mainExperimentSetup != null)
             {
                 mainExperimentSetup.CubeTouched(gameObject);
@@ -54,3 +54,4 @@ public class ResetPosition : MonoBehaviour
         transform.rotation = initialRotation;
     }
 }
+

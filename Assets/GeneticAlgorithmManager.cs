@@ -16,7 +16,15 @@ public class GeneticAlgorithmManager
     public GeneticAlgorithmManager(FitnessEvaluator fitnessEvaluator)
     {
         _fitnessEvaluator = fitnessEvaluator;
-
+            /*
+            // Setup physics parameters for this trial
+            Physics.defaultSolverIterations = 10; // [3-40] in step size of 1
+            Physics.defaultSolverVelocityIterations = 5; // [1-40]
+            Physics.defaultContactOffset = 0.01f; // [0.001,0.1]
+            Physics.defaultMaxDepenetrationVelocity = 10; // [1-100]
+            Physics.bounceThreshold = 2; // [0.1-4]
+            Debug.Log("Physics parameters adjusted!");
+            */
         var chromosome = new CNGChromosome(
             lowerBounds: new double[] { 3, 5, 0.001, 1, 0.1 },
             upperBounds: new double[] { 40, 40, 0.1, 100, 4 },
