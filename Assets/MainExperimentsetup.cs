@@ -53,6 +53,7 @@ public class MainExperimentsetup : MonoBehaviour
     public liftingTrial lift;
     public PushingTrial pushing;
 
+
     public Animator main_anim;
     public string[] animation_names = new string[] { "lift_1", "lift_2", "lift_3", "push_1", "push_2", "push_3", "stack_1", "stack_2", "stack_3" };
     private int[] shuffled_anim_indices;
@@ -212,12 +213,12 @@ public class MainExperimentsetup : MonoBehaviour
             // Start the trials
             if (trial_sequencer != null)
                 StopCoroutine(trial_sequencer);
-            trial_sequencer = StartCoroutine(ConductTrials());
+          //  trial_sequencer = StartCoroutine(ConductTrials()); *************************************
         }
     }
 
     // Function to conduct trials
-    IEnumerator ConductTrials()
+    public IEnumerator ConductTrials(float[] physicsParams)
     {
         // Reset cube objects 
         cubeReseters[0].ResetCubes();
@@ -242,7 +243,7 @@ public class MainExperimentsetup : MonoBehaviour
             Debug.Log("Trial: " + i.ToString() + " out of: " + number_of_simulations.ToString());
             Debug.Log("Anim index: " + shuffled_anim_indices[i].ToString());
             Debug.Log("Anim: " + animation_names[shuffled_anim_indices[i]]);
-
+            /*
             // Setup physics parameters for this trial
             Physics.defaultSolverIterations = 10; // [3-40] in step size of 1
             Physics.defaultSolverVelocityIterations = 5; // [1-40]
@@ -250,6 +251,13 @@ public class MainExperimentsetup : MonoBehaviour
             Physics.defaultMaxDepenetrationVelocity = 10; // [1-100]
             Physics.bounceThreshold = 2; // [0.1-4]
             Debug.Log("Physics parameters adjusted!");
+            */
+            // Apply dynamic physics parameters
+            Physics.defaultSolverIterations = (int)physicsParams[0];
+            Physics.defaultSolverVelocityIterations = (int)physicsParams[1];
+            Physics.defaultContactOffset = physicsParams[2];
+            Physics.defaultMaxDepenetrationVelocity = physicsParams[3];
+            Physics.bounceThreshold = physicsParams[4];
 
             // Play the corresponding animation
             main_anim.Play(animation_names[shuffled_anim_indices[i]], 0);
@@ -283,6 +291,7 @@ public class MainExperimentsetup : MonoBehaviour
 
                 // Use baseCubeStates, middleCubeStates, and topCubeStates in your simulation or trial logic
             }
+
             List<float> physics_cube_pos_x = new List<float>();
             List<float> physics_cube_pos_y = new List<float>();
             List<float> physics_cube_pos_z = new List<float>();
@@ -291,6 +300,7 @@ public class MainExperimentsetup : MonoBehaviour
             float normedTime = 0f;
             while (normedTime < 1)
             {
+                normedTime = main_anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
                 // The next part is only for the optimisation algorithm 
                 // ************************************************************************
                 // ********************* OPTIMIZATION ALGORITHM ***************************
@@ -300,8 +310,10 @@ public class MainExperimentsetup : MonoBehaviour
                     physics_cube_pos_x.Add(cubeReseters[0].transform.position.x);
                     physics_cube_pos_y.Add(cubeReseters[0].transform.position.y);
                     physics_cube_pos_z.Add(cubeReseters[0].transform.position.z);
+                    //add the rotations too and compare with the csv 
+                    //start counting from 0 
                 }
-
+                //we have the 
 
                 // TODO: Compute results after each trial (this means calculating the distances between the current position and the recorded (animation) position of the cube)
                 //match the positions based on when the cube begins to move and the final position of the cubes, we are looking to minimise the position. 
@@ -313,17 +325,15 @@ public class MainExperimentsetup : MonoBehaviour
                 // ************************************************************************
                 // ************************************************************************
 
-
-                normedTime = main_anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
                 yield return null;
             }
 
 
-            // Compute values after anim loop is done 
+            // Compute values after anim loop is done, computing the overall distance travelled 
             physics_cube_pos_x.Sum();
             physics_cube_pos_y.Sum();
             physics_cube_pos_z.Sum();
-
+            //compute the difference between the trajectory of the virtual cube and the physics cube
 
             Debug.Log("Animation Done");
             main_anim.StopPlayback();
