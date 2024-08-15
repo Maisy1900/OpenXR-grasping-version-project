@@ -11,6 +11,9 @@ public class ResetPosition : MonoBehaviour
     // Reference to the MainExperimentsetup script
     private MainExperimentsetup mainExperimentSetup;
 
+    // Index of the cube, unique for each cube
+    public int cubeIndex;
+
     void Start()
     {
         initialPosition = transform.position;
@@ -43,7 +46,8 @@ public class ResetPosition : MonoBehaviour
             // Notify MainExperimentsetup that the cube was touched
             if (mainExperimentSetup != null)
             {
-                mainExperimentSetup.CubeTouched(gameObject);
+                // Notify MainExperimentsetup that the cube was touched with its index
+                mainExperimentSetup.CubeTouched(gameObject, cubeIndex);
             }
         }
     }
@@ -54,4 +58,3 @@ public class ResetPosition : MonoBehaviour
         transform.rotation = initialRotation;
     }
 }
-

@@ -35,16 +35,16 @@ CalculateFitness Method: Implement this method to calculate and return a fitness
 
         return 0; //fitnessScore;*******************************
     }*/
-    public double EvaluateFitness(float[] physicsParams)
+    public double EvaluateFitness(/*float[] physicsParams*/)
     {
         // Start the simulation with the provided physics parameters
-        experimentSetup.StartCoroutine(experimentSetup.ConductTrials(physicsParams));
+       // experimentSetup.StartCoroutine(experimentSetup.ConductTrials(physicsParams));
 
         // Calculate total error based on the difference between the expected and actual positions/rotations
         float totalError = 0.0f;
 
         // Example fitness calculation (you need to implement the error calculation logic)
-        totalError += experimentSetup.CalculateTotalError();
+        //totalError += experimentSetup.CalculateTotalError();
 
         // Fitness is inversely proportional to the error (lower error = higher fitness)
         double fitnessScore = 1 / (1 + totalError); // Avoid division by zero

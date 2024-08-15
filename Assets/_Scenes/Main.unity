@@ -2961,6 +2961,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 261f8cce7075e5a43879eed1ccef0c5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cubeIndex: 0
 --- !u!65 &279149601
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -11771,6 +11772,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 261f8cce7075e5a43879eed1ccef0c5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cubeIndex: 0
 --- !u!114 &916794115
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16101,9 +16103,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1288394538}
   - component: {fileID: 1288394537}
-  - component: {fileID: 1288394541}
-  - component: {fileID: 1288394540}
-  - component: {fileID: 1288394539}
   m_Layer: 0
   m_Name: SimulationExperiment
   m_TagString: Untagged
@@ -16146,21 +16145,21 @@ MonoBehaviour:
   - {fileID: 279149600}
   - {fileID: 1412766535}
   csvPaths:
-  - 'Assets/CSVFiles/lift_1_preprocessed '
-  - 'Assets/CSVFiles/lift_2_preprocessed '
-  - 'Assets/CSVFiles/lift_3_preprocessed '
-  - 'Assets/CSVFiles/push_1_preprocessed '
-  - 'Assets/CSVFiles/push_2_preprocessed '
-  - 'Assets/CSVFiles/push_3_preprocessed '
-  - 'Assets/CSVFiles/stack_base_1_preprocessed '
-  - 'Assets/CSVFiles/stack_middle_1_preprocessed '
-  - 'Assets/CSVFiles/stack_top_1_preprocessed '
-  - 'Assets/CSVFiles/stack_base_2_preprocessed '
-  - 'Assets/CSVFiles/stack_middle_2_preprocessed '
-  - 'Assets/CSVFiles/stack_top_2_preprocessed '
-  - 'Assets/CSVFiles/stack_base_3_preprocessed '
-  - 'Assets/CSVFiles/stack_middle_3_preprocessed '
-  - 'Assets/CSVFiles/stack_top_3_preprocessed '
+  - Assets/CSVFiles/lift_1_preprocessed.csv
+  - Assets/CSVFiles/lift_2_preprocessed.csv
+  - Assets/CSVFiles/lift_3_preprocessed.csv
+  - Assets/CSVFiles/push_1_preprocessed.csv
+  - Assets/CSVFiles/push_2_preprocessed.csv
+  - Assets/CSVFiles/push_3_preprocessed.csv
+  - Assets/CSVFiles/stack_base_1_preprocessed.csv
+  - Assets/CSVFiles/stack_middle_1_preprocessed.csv
+  - Assets/CSVFiles/stack_top_1_preprocessed.csv
+  - Assets/CSVFiles/stack_base_2_preprocessed.csv
+  - Assets/CSVFiles/stack_middle_2_preprocessed.csv
+  - Assets/CSVFiles/stack_top_2_preprocessed.csv
+  - 'Assets/CSVFiles/stack_base_3_preprocessed.csv '
+  - Assets/CSVFiles/stack_middle_3_preprocessed.csv
+  - Assets/CSVFiles/stack_top_3_preprocessed.csv
 --- !u!4 &1288394538
 Transform:
   m_ObjectHideFlags: 0
@@ -16176,42 +16175,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1288394539
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1288394536}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b761571f0b089a4dba692e685d8af02, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1288394540
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1288394536}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c7e053dae0fd5aa4b91a9a6c8c0b6b2a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1288394541
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1288394536}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd37f037e2042f84d81b2601d6f490d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1312497297
 GameObject:
   m_ObjectHideFlags: 0
@@ -17472,6 +17435,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 261f8cce7075e5a43879eed1ccef0c5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cubeIndex: 0
 --- !u!65 &1412766536
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -25786,7 +25750,7 @@ GameObject:
   - component: {fileID: 8570956836965476128}
   m_Layer: 6
   m_Name: R_IndexDistal
-  m_TagString: Hand
+  m_TagString: idx_tip
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -29392,7 +29356,7 @@ GameObject:
   - component: {fileID: 1412429538}
   m_Layer: 6
   m_Name: R_IndexDistal
-  m_TagString: xrotations
+  m_TagString: idx_tip
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -29786,7 +29750,7 @@ GameObject:
   - component: {fileID: 3288495761962597434}
   m_Layer: 6
   m_Name: R_IndexTip
-  m_TagString: Untagged
+  m_TagString: idx_tip
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
