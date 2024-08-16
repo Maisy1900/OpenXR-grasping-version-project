@@ -32,25 +32,30 @@ public class ResetPosition : MonoBehaviour
         }    
     }
 
-    private void OnCollisionEnter(Collision collision)
+private void OnCollisionEnter(Collision collision)
+{
+    if (collision.gameObject.tag == "Floor")
     {
-        if (collision.gameObject.tag == "Floor")
-        {
-            // Reset the position when the cube hits the floor
-            transform.position = initialPosition;
-            transform.rotation = initialRotation;
-        }
+        // Reset the position when the cube hits the floor
+        transform.position = initialPosition;
+        transform.rotation = initialRotation;
+    }
 
-        if (collision.gameObject.tag == "idx_tip")
+    if (collision.gameObject.tag == "idx_tip")
+    {
+        // Notify MainExperimentsetup that the cube was touched
+        Debug.Log("Cube " + cubeIndex + " touched by idx_tip.");
+        if (mainExperimentSetup != null)
         {
-            // Notify MainExperimentsetup that the cube was touched
-            if (mainExperimentSetup != null)
-            {
-                // Notify MainExperimentsetup that the cube was touched with its index
-                mainExperimentSetup.CubeTouched(gameObject, cubeIndex);
-            }
+                int trialNumber = mainExperimentSetup.currentTrialNumber;
+
+                // Call CubeTouched with the trial number
+                bool firstTouch = mainExperimentSetup.CubeTouched(gameObject, cubeIndex, trialNumber);
+
         }
     }
+}
+
 
     public void ResetCubes()
     {

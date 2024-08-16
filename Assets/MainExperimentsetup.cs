@@ -75,6 +75,7 @@ class DataClass
 public class MainExperimentsetup : MonoBehaviour
 {
     // Variables to store experiment data
+    #region variables
     DataClass dataclassBase;
     DataClass dataclassMid;
     DataClass dataclassTop;
@@ -86,11 +87,14 @@ public class MainExperimentsetup : MonoBehaviour
     public StackingTrial stack;
     public liftingTrial lift;
     public PushingTrial pushing;
+    public bool trialCompleted { get; private set; } // Flag to signal trial completion
 
 
     public Animator main_anim;
     public string[] animation_names = new string[] { "lift_1", "lift_2", "lift_3", "push_1", "push_2", "push_3", "stack_1", "stack_2", "stack_3" };
     private int[] shuffled_anim_indices;
+    public int currentTrialNumber = 0; // Store the current trial number
+    private GeneticAlgorithmManager _geneticAlgorithmManager;
 
     public ResetPosition[] cubeReseters;
 
@@ -137,26 +141,26 @@ public class MainExperimentsetup : MonoBehaviour
     private bool baseCubeFirstTouched = false;
     private bool middleCubeFirstTouched = false;
     private bool topCubeFirstTouched = false;
+    #endregion
     // This method returns a boolean indicating if the cube was touched for the first time
-    public bool CubeTouched(GameObject touchedCube, int cubeIndex)
+    public bool CubeTouched(GameObject touchedCube, int cubeIndex, int trialNumber)
     {
-        // For stacking trials, each cube has its own "first touch" tracking
         if (cubeIndex == 0 && !baseCubeFirstTouched)
         {
             baseCubeFirstTouched = true;
-            Debug.Log($"Base Cube was touched for the first time.");
+            Debug.Log($"[{Time.time}] Base Cube was touched for the first time in trial {trialNumber}.");
             return true;
         }
         else if (cubeIndex == 1 && !middleCubeFirstTouched)
         {
             middleCubeFirstTouched = true;
-            Debug.Log($"Middle Cube was touched for the first time.");
+            Debug.Log($"[{Time.time}] Middle Cube was touched for the first time in trial {trialNumber}.");
             return true;
         }
         else if (cubeIndex == 2 && !topCubeFirstTouched)
         {
             topCubeFirstTouched = true;
-            Debug.Log($"Top Cube was touched for the first time.");
+            Debug.Log($"[{Time.time}] Top Cube was touched for the first time in trial {trialNumber}.");
             return true;
         }
 
@@ -168,6 +172,7 @@ public class MainExperimentsetup : MonoBehaviour
         public Quaternion Rotation; //rotation values
         public float Time;
     }
+
     void PreprocessCSVFile(string csvPath)
     {
         List<CubeState> cubeStates = new List<CubeState>();
@@ -211,7 +216,6 @@ public class MainExperimentsetup : MonoBehaviour
         // Store or process the preprocessed cube states as needed
         preprocessedData[csvPath] = cubeStates;
     }
-
     /* record the cubes position and rotation at each timestep
     
     public List<CubeState> TrackSimulationData(Transform cubeTransform, float normedTime)
@@ -236,32 +240,33 @@ public class MainExperimentsetup : MonoBehaviour
         return simulationData;
     }
     */
-
-
     void SaveDataFile(int trialNumber)
     {
-        // Save base cube data if it was used
+        Debug.Log($"Saving data for trial {trialNumber}");
+
         if (dataclassBase.cubePos.Count > 0)
         {
             dataclassBase.SaveToCSV($"BaseCube_Trial_{trialNumber}");
+            Debug.Log($"BaseCube data saved for trial {trialNumber}");
             dataclassBase.ClearAllLists();
         }
 
-        // Save middle cube data if it was used
         if (dataclassMid.cubePos.Count > 0)
         {
             dataclassMid.SaveToCSV($"MiddleCube_Trial_{trialNumber}");
+            Debug.Log($"MiddleCube data saved for trial {trialNumber}");
             dataclassMid.ClearAllLists();
         }
 
-        // Save top cube data if it was used
         if (dataclassTop.cubePos.Count > 0)
         {
             dataclassTop.SaveToCSV($"TopCube_Trial_{trialNumber}");
+            Debug.Log($"TopCube data saved for trial {trialNumber}");
             dataclassTop.ClearAllLists();
         }
-        else{
-            Debug.Log("error save datafile");
+        else
+        {
+            Debug.Log($"Error saving data for trial {trialNumber}");
         }
     }
 
@@ -277,6 +282,7 @@ public class MainExperimentsetup : MonoBehaviour
         // obj  [task_index] [animation_index]
         // Initialize the dictionary
         preprocessedData = new Dictionary<string, List<CubeState>>();
+        _geneticAlgorithmManager = new GeneticAlgorithmManager(this);
 
         // Preprocess each CSV file
         foreach (string csvPath in csvPaths)
@@ -310,24 +316,34 @@ public class MainExperimentsetup : MonoBehaviour
 
         // Now shuffle this expanded array
         Shuffle(shuffled_anim_indices);
+        // Create the GeneticAlgorithmManager and start the genetic algorithm
+        _geneticAlgorithmManager = new GeneticAlgorithmManager(this);
 
+        // Start the genetic algorithm
+        _geneticAlgorithmManager.Start();
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            
+
             // Start the trials
             if (trial_sequencer != null)
                 StopCoroutine(trial_sequencer);
-              trial_sequencer = StartCoroutine(ConductTrials()); 
+            //  trial_sequencer = StartCoroutine(ConductTrials());
         }
 
     }
+    public void StartTrials(float[] physicsParams, Action<float> onTrialComplete)
+    {
+        trialCompleted = false;
+        StartCoroutine(ConductTrials(physicsParams, onTrialComplete));
+    }
 
+    #region conductTrials
     // Function to conduct trials
-    public IEnumerator ConductTrials(/*float[] physicsParams*/)
+    public IEnumerator ConductTrials(float[] physicsParams, Action<float> onTrialComplete)
     {
         // Reset cube objects 
         cubeReseters[0].ResetCubes();
@@ -341,9 +357,13 @@ public class MainExperimentsetup : MonoBehaviour
         yield return new WaitForSeconds(1.0f);
         main_anim.StopPlayback();
         Debug.Log("Calibration is over");
+        float totalError = 0f;
 
+        //running the simulation 
         for (int i = 0; i < number_of_simulations; i++)
         {
+            #region resetting values and setting values for the trial
+            currentTrialNumber = i;
             // Reset cube objects for each trial 
             cubeReseters[0].ResetCubes();
             cubeReseters[1].ResetCubes();
@@ -353,164 +373,207 @@ public class MainExperimentsetup : MonoBehaviour
             baseCubeFirstTouched = false;
             middleCubeFirstTouched = false;
             topCubeFirstTouched = false;
-
+            float normedTime = 0f;
+            float trialError = 0f;
             Debug.Log("Trial: " + i.ToString() + " out of: " + number_of_simulations.ToString());
             Debug.Log("Anim index: " + shuffled_anim_indices[i].ToString());
             Debug.Log("Anim: " + animation_names[shuffled_anim_indices[i]]);
+            int animIndex = shuffled_anim_indices[i];
+            //Apply dynamic physics parameters
+            Physics.defaultSolverIterations = (int)physicsParams[0];
+            Physics.defaultSolverVelocityIterations = (int)physicsParams[1];
+            Physics.defaultContactOffset = physicsParams[2];
+            Physics.defaultMaxDepenetrationVelocity = physicsParams[3];
+            Physics.bounceThreshold = physicsParams[4];
+            Debug.Log("Starting trials with physics params: " + string.Join(",", physicsParams));
 
-            // Apply dynamic physics parameters
-            // Physics.defaultSolverIterations = (int)physicsParams[0];
-            // Physics.defaultSolverVelocityIterations = (int)physicsParams[1];
-            // Physics.defaultContactOffset = physicsParams[2];
-            // Physics.defaultMaxDepenetrationVelocity = physicsParams[3];
-            // Physics.bounceThreshold = physicsParams[4];
-                        // Setup physics parameters for this trial
-            Physics.defaultSolverIterations = 10; // [3-40] in step size of 1
-            Physics.defaultSolverVelocityIterations = 5; // [1-40]
-            Physics.defaultContactOffset = 0.01f; // [0.001,0.1]
-            Physics.defaultMaxDepenetrationVelocity = 10; // [1-100]
-            Physics.bounceThreshold = 2; // [0.1-4]
             Debug.Log("Physics parameters adjusted!");
 
             // Play the corresponding animation
             main_anim.Play(animation_names[shuffled_anim_indices[i]], 0);
             bool animstate = main_anim.GetCurrentAnimatorStateInfo(0).IsName(animation_names[shuffled_anim_indices[i]]);
             Debug.Log("Animation playing!");
-
+            #endregion
             // Wait for the animation to complete
-            float normedTime = 0f;
             while (normedTime < 1)
             {
                 normedTime = main_anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
 
                 Vector3 wristPos = GetWristPosition();  // Get wrist position from articulationObject
 
-                if (i < 3 && baseCubeFirstTouched) // Lifting and Pushing trials
+                if (animIndex < 3 && baseCubeFirstTouched) // Lifting and Pushing trials
                 {
+                    Debug.Log($"Recording base cube results for trial {i} (Lifting)");
                     RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, i, "Lifting");
                 }
-                if (i >= 3 && i < 6 && baseCubeFirstTouched) // Lifting and Pushing trials
-                {
 
+                if (animIndex >= 3 && animIndex < 6 && baseCubeFirstTouched) // Lifting and Pushing trials
+                {
+                    Debug.Log($"Recording base cube results for trial {i} (Pushing)");
                     RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, i, "Pushing");
                 }
                 else // Stacking trials
                 {
-                    if (i >= 6 && baseCubeFirstTouched)
+                    if (animIndex >= 6 && baseCubeFirstTouched)
                     {
-
+                        Debug.Log($"Recording base cube results for trial {i} (Stacking)");
                         RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, i, "Stacking_Base");
                     }
-                    if (i >= 6 && middleCubeFirstTouched)
-                    {
 
+                    if (animIndex >= 6 && middleCubeFirstTouched)
+                    {
+                        Debug.Log($"Recording middle cube results for trial {i} (Stacking)");
                         RecordResults(dataclassMid, cubeReseters[1].transform.position, cubeReseters[1].transform.rotation, wristPos, normedTime, i, "Stacking_Middle");
                     }
-                    if (i >= 6 && topCubeFirstTouched)
-                    {
 
+                    if (animIndex >= 6 && topCubeFirstTouched)
+                    {
+                        Debug.Log($"Recording top cube results for trial {i} (Stacking)");
                         RecordResults(dataclassTop, cubeReseters[2].transform.position, cubeReseters[2].transform.rotation, wristPos, normedTime, i, "Stacking_Top");
                     }
                 }
 
-
                 yield return null;
             }
 
-            //we have the 
-
-            // TODO: Compute results after each trial (this means calculating the distances between the current position and the recorded (animation) position of the cube)
-            //match the positions based on when the cube begins to move and the final position of the cubes, we are looking to minimise the position. 
-
-
-            // Update optimization so that the algorithm can decide how to change physics parameters
-
-            // ************************************************************************
-            // ************************************************************************
-            // ************************************************************************
-
             // Once animation has finished, calculate total error (fitness) for this trial
-            float totalPositionError = 0f;
-            float totalRotationError = 0f;
-
-            //match the current animation with the csv file of desired locations
-            //csvs 0-5 we can use [i] 6-14
-            if (i >= 0 && i <= 5)
+            //match the current animation with the csv holding the preprocessed data 
+            if (animIndex >= 0 && animIndex < 6)
             {
                 // For lifting and pushing animations (index 0-5)
-                string csvKey = csvPaths[i];
-                List<CubeState> cubeStates = preprocessedData[csvKey];
-
+                string baseCsvKey = csvPaths[animIndex];
+                List<CubeState> baseCubeStates = preprocessedData[baseCsvKey];
+                trialError = CalculateTrialError(dataclassBase, baseCubeStates);
                 // Use cubeStates in your simulation or trial logic
             }
-            else if (i >= 6 && i < 9)
+            else if (animIndex >= 6 && animIndex < 9)
             {
                 // For stacking animations (index 6-8)
 
                 // First cube (base) bases can either be 6 when i=6, 9 when i=7, or 12 when i=8
-                string baseCsvKey = csvPaths[6 + (i - 6) * 3];  // Correctly indexing into the base CSV
+                string baseCsvKey = csvPaths[6 + (animIndex - 6) * 3];  // Correctly indexing into the base CSV
                 List<CubeState> baseCubeStates = preprocessedData[baseCsvKey];
 
                 // Second cube (middle) can either be 7 when i=6, 10 when i=7, or 13 when i=8
-                string middleCsvKey = csvPaths[7 + (i - 6) * 3];  // Correctly indexing into the middle CSV
+                string middleCsvKey = csvPaths[7 + (animIndex - 6) * 3];  // Correctly indexing into the middle CSV
                 List<CubeState> middleCubeStates = preprocessedData[middleCsvKey];
 
                 // Third cube (top) can either be 8 when i=6, 11 when i=7, or 14 when i=8
-                string topCsvKey = csvPaths[8 + (i - 6) * 3];  // Correctly indexing into the top CSV
+                string topCsvKey = csvPaths[8 + (animIndex - 6) * 3];  // Correctly indexing into the top CSV
                 List<CubeState> topCubeStates = preprocessedData[topCsvKey];
+                trialError = CalculateTrialError(dataclassBase, baseCubeStates, dataclassMid, middleCubeStates, dataclassTop, topCubeStates);
 
-                // Use baseCubeStates, middleCubeStates, and topCubeStates in your simulation or trial logic
+
             }
 
+
             // Wait for the animation to complete
-
-
-
-            // Compute values after anim loop is done, computing the overall distance travelled 
-            //physics_cube_pos_x.Sum();
-            //physics_cube_pos_y.Sum();
-            //physics_cube_pos_z.Sum();
             //compute the difference between the trajectory of the virtual cube and the physics cube
+            // Once animation is finished, calculate total error (fitness) for this trial
+            // Collect simulated data
 
+            // Calculate error between simulation and preprocessed data
+            List<CubeState> preprocessedCubeStates = preprocessedData[csvPaths[i]];
+
+
+
+            // Callback with the trial error
             Debug.Log("Animation Done");
             main_anim.StopPlayback();
             string trialType = DetermineTrialType(i);
 
             SaveDataFile(i);  // This will save the data from base, middle, and top cubes to separate CSV files
+
             // Optionally, add a short delay between trials
             yield return new WaitForSeconds(1.0f);
             Debug.Log("Trial " + i + " done");
+            onTrialComplete(trialError);
+            //wait for the physics parameters to update 
+            yield return new WaitForSeconds(3.0f);
         }
 
         // Record data into a file (not essential)
 
 
-    Debug.Log("All trials complete");
+        Debug.Log("All trials complete");
         yield return null;
 
     }
+    #endregion 
+    private float CalculateTrialError(DataClass baseTrialData, List<CubeState> baseCubeStates,
+                                      DataClass middleTrialData = null, List<CubeState> middleCubeStates = null,
+                                      DataClass topTrialData = null, List<CubeState> topCubeStates = null)
+    {
+        float totalPositionError = 0f;
+        float totalRotationError = 0f;
+        int numCubes = 0;  // Count how many cubes have valid data
+        int count;
 
-    
-    // public float CalculateTotalError()
-    // {
-    //     float totalPositionError = 0f;
-    //     float totalRotationError = 0f;
+        // Check if base cube data exists and is valid
+        if (baseTrialData.cubePos.Count > 0 && baseCubeStates.Count > 0)
+        {
+            count = Mathf.Min(baseTrialData.cubePos.Count, baseCubeStates.Count);
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 simulatedPos = baseTrialData.cubePos[i];
+                Vector3 preprocessedPos = baseCubeStates[i].Position;
+                totalPositionError += Vector3.Distance(simulatedPos, preprocessedPos);
 
-    //     // Compare positions and rotations of cubes between simulation and preprocessed data
-    //     for (int i = 0; i < dataclass.cubePos.Count; i++)
-    //     {
-    //         // Retrieve expected data from preprocessedData
-    //         Vector3 expectedPosition = /* Get the expected position from preprocessed data */0;
-    //         Quaternion expectedRotation = /* Get the expected rotation from preprocessed data */0;
+                Quaternion simulatedRot = Quaternion.Euler(baseTrialData.cubeRot[i]);
+                Quaternion preprocessedRot = baseCubeStates[i].Rotation;
+                totalRotationError += Quaternion.Angle(simulatedRot, preprocessedRot);
+            }
+            numCubes++;  // Base cube data exists
+        }
 
-    //         // Compare the current cube positions/rotations with the expected values
-    //         totalPositionError += CalculateDistance(dataclass.cubePos[i], expectedPosition);
-    //         totalRotationError += CalculateRotationDifference(dataclass.cubeRot[i], expectedRotation);
-    //     }
+        // Check if middle cube data exists and is valid (only for stacking trials)
+        if (middleCubeStates != null && middleTrialData != null && middleTrialData.cubePos.Count > 0 && middleCubeStates.Count > 0)
+        {
+            count = Mathf.Min(middleTrialData.cubePos.Count, middleCubeStates.Count);
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 simulatedPos = middleTrialData.cubePos[i];
+                Vector3 preprocessedPos = middleCubeStates[i].Position;
+                totalPositionError += Vector3.Distance(simulatedPos, preprocessedPos);
 
-    //     // Combine the errors (you can weigh them if needed)
-    //     return totalPositionError + totalRotationError;
-    // }
+                Quaternion simulatedRot = Quaternion.Euler(middleTrialData.cubeRot[i]);
+                Quaternion preprocessedRot = middleCubeStates[i].Rotation;
+                totalRotationError += Quaternion.Angle(simulatedRot, preprocessedRot);
+            }
+            numCubes++;  // Middle cube data exists
+        }
+
+        // Check if top cube data exists and is valid (only for stacking trials)
+        if (topCubeStates != null && topTrialData != null && topTrialData.cubePos.Count > 0 && topCubeStates.Count > 0)
+        {
+            count = Mathf.Min(topTrialData.cubePos.Count, topCubeStates.Count);
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 simulatedPos = topTrialData.cubePos[i];
+                Vector3 preprocessedPos = topCubeStates[i].Position;
+                totalPositionError += Vector3.Distance(simulatedPos, preprocessedPos);
+
+                Quaternion simulatedRot = Quaternion.Euler(topTrialData.cubeRot[i]);
+                Quaternion preprocessedRot = topCubeStates[i].Rotation;
+                totalRotationError += Quaternion.Angle(simulatedRot, preprocessedRot);
+            }
+            numCubes++;  // Top cube data exists
+        }
+
+        // If no cubes had valid data, return a large default error value to indicate a failure
+        if (numCubes == 0)
+        {
+            return float.MaxValue;  // Return a high error to indicate failure due to no data
+        }
+
+        // Calculate average error per cube to normalize the fitness
+        float averagePositionError = totalPositionError / numCubes;
+        float averageRotationError = totalRotationError / numCubes;
+
+        float totalError = averagePositionError + averageRotationError;
+
+        return totalError; // Return normalized error
+    }
 
 
     private string DetermineTrialType(int trialIndex)
@@ -529,16 +592,6 @@ public class MainExperimentsetup : MonoBehaviour
      * 
      */
     // This method will calculate the Euclidean distance between two Vector3 positions
-    private float CalculateDistance(Vector3 pos1, Vector3 pos2)
-    {
-        return Vector3.Distance(pos1, pos2);
-    }
-
-    // This method will calculate the difference in rotation (in degrees) between two quaternions
-    private float CalculateRotationDifference(Quaternion rot1, Quaternion rot2)
-    {
-        return Quaternion.Angle(rot1, rot2);
-    }
 
     // Function to run hand calibration
     IEnumerator RunHandCalibration()
@@ -573,25 +626,5 @@ public class MainExperimentsetup : MonoBehaviour
             array[r] = array[n];
             array[n] = t;
         }
-    }
-    void fitness()
-    {
-        //A lower difference could correspond to a higher fitness score.
-        /*
-        Compare with Preprocessed Data:
-
-        The CompareWithPreprocessedData method compares the current position and rotation of the cube with the preprocessed data from the CSV.
-        The Vector3.Distance function is used to measure the difference in position, and Quaternion.Angle is used to measure the difference in rotation.
-        */
-    }
-
-
-    public CubeState GetInitialCubeState(GameObject cube)
-    {
-        if (initialCubeStates.ContainsKey(cube))
-        {
-            return initialCubeStates[cube];
-        }
-        return default(CubeState);
     }
 }

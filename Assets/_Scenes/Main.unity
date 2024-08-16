@@ -2961,7 +2961,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 261f8cce7075e5a43879eed1ccef0c5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubeIndex: 0
+  cubeIndex: 1
 --- !u!65 &279149601
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -17435,7 +17435,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 261f8cce7075e5a43879eed1ccef0c5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubeIndex: 0
+  cubeIndex: 2
 --- !u!65 &1412766536
 BoxCollider:
   m_ObjectHideFlags: 0

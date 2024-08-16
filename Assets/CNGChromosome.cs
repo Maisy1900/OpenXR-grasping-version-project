@@ -21,7 +21,6 @@ public class CNGChromosome : FloatingPointChromosome
         _totalBits = totalBits;
         _fractionalBits = fractionalBits;
 
-        // Override the initial population with CNG-based initialization
         for (int i = 0; i < Length; i++)
         {
             var randomValue = CNG();

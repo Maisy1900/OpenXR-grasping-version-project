@@ -1,55 +1,54 @@
-public class FitnessEvaluator
+using GeneticSharp.Domain.Fitnesses;
+using GeneticSharp.Domain.Chromosomes;
+using System.Linq;
+using System.Threading;
+using UnityEngine;
+
+public class FitnessEvaluator : IFitness
 {
     private MainExperimentsetup experimentSetup;
+    private bool trialCompleted;
+    private float trialError;
 
     public FitnessEvaluator(MainExperimentsetup setup)
     {
         this.experimentSetup = setup;
     }
-    /*add logic to FitnessEvaluator: Should evaluate fitness based on the simulation results and preprocessed data.#
-     * Run the simulation using the provided physics parameters.
-     * Compare the results of the simulation to your preprocessed data.
-     * Return a fitness score based on how close the simulation results are to the preprocessed data.
-     * Next Steps: This is where you'll need to focus your efforts:
 
-Implement the Simulation Call: Ensure that ConductTrials in MainExperimentSetup can accept the physics parameters and run the trial with those settings.
-Implement the Fitness Calculation: You need to calculate how closely the results of the simulation match your expected results. This typically involves comparing positions and rotations of objects (like cubes) and returning a score.
-4. MainExperimentSetup
-Status: This class still needs work, specifically in how it interacts with the genetic algorithm:
-
-ConductTrials Method: Modify it to accept physics parameters and apply them to the simulation.
-CalculateFitness Method: Implement this method to calculate and return a fitness score based on the trial results.
-     
-    public double EvaluateFitness(float[] physicsParams)
+    public double Evaluate(IChromosome chromosome)
     {
-        // Run the simulation with the given parameters
-        var trialCoroutine = experimentSetup.StartCoroutine(experimentSetup.ConductTrials(physicsParams));
+        // Convert the chromosome to physics parameters
+    var floatChromosome = chromosome as FloatingPointChromosome;
+    float[] physicsParams = floatChromosome.ToFloatingPoints().Select(x => Mathf.Clamp((float)x, 0f, 100f)).ToArray();  // Adjust these bounds
 
-        // Assuming the trials will update some result internally
-        // Wait for trials to finish before evaluating (use some mechanism to check when it's done)
 
-        // Here you would typically wait or yield until the trial is complete
-        // and then calculate the fitness based on the results of the trial.
-        // For simplicity, let's assume there's a method to get the result:
-        //double fitnessScore = experimentSetup.GetTrialResults(); // Implement this method to return trial results
+        // Reset error value
+        trialError = 0f;
+        trialCompleted = false;
 
-        return 0; //fitnessScore;*******************************
-    }*/
-    public double EvaluateFitness(/*float[] physicsParams*/)
-    {
-        // Start the simulation with the provided physics parameters
-       // experimentSetup.StartCoroutine(experimentSetup.ConductTrials(physicsParams));
+        // Start the trials asynchronously using a callback
+        experimentSetup.StartTrials(physicsParams, OnTrialComplete);
+        Debug.Log("starting trials");
 
-        // Calculate total error based on the difference between the expected and actual positions/rotations
-        float totalError = 0.0f;
+        // Wait for trial completion
+        while (!trialCompleted)
+        {
+            Thread.Sleep(3);  // Small delay to prevent locking the main thread
+        }
 
-        // Example fitness calculation (you need to implement the error calculation logic)
-        //totalError += experimentSetup.CalculateTotalError();
+        // Log the fitness result for this chromosome
+        Debug.Log($"Fitness for chromosome: {1 / (1 + trialError)} with error: {trialError}");
 
-        // Fitness is inversely proportional to the error (lower error = higher fitness)
-        double fitnessScore = 1 / (1 + totalError); // Avoid division by zero
-
-        return fitnessScore;
+        // Return fitness value based on error (higher fitness = lower error)
+        return 1 / (1 + trialError);  // Prevent division by zero
     }
 
+    private void OnTrialComplete(float error)
+    {
+        // Log the trial error received from the simulation
+        Debug.Log($"Trial complete with error: {error}");
+
+        trialError = error;
+        trialCompleted = true; // Signal that the trial has finished
+    }
 }
