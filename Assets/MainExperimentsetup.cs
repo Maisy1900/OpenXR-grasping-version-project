@@ -714,6 +714,7 @@ public class MainExperimentsetup : MonoBehaviour
 
     public IEnumerator TrialCoroutine(float[] physicsParams, Action<float> onComplete)
     {
+        ResetCubes();
         // Step 1: Apply the physics parameters for the trial
         ApplyPhysicsParameters(physicsParams);
 
