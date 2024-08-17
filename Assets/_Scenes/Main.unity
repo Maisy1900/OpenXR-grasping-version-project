@@ -16140,6 +16140,7 @@ MonoBehaviour:
   - stack_1
   - stack_2
   - stack_3
+  currentTrialNumber: 0
   cubeReseters:
   - {fileID: 916794114}
   - {fileID: 279149600}
@@ -16803,7 +16804,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.2, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 5320231164123301443}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1368866483
@@ -27957,11 +27959,11 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 5, y: 10, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5231812487723213793}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1368866482}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5351960269577519220
 MonoBehaviour:
@@ -29802,10 +29804,8 @@ SceneRoots:
   - {fileID: 504059072}
   - {fileID: 706601222}
   - {fileID: 1368866482}
-  - {fileID: 5320231164123301443}
   - {fileID: 916794107}
   - {fileID: 279149606}
-  - {fileID: 1412766541}
   - {fileID: 6668661}
   - {fileID: 705253795}
   - {fileID: 330688135}
@@ -29816,3 +29816,4 @@ SceneRoots:
   - {fileID: 1288394538}
   - {fileID: 58268244}
   - {fileID: 1688519557}
+  - {fileID: 1412766541}

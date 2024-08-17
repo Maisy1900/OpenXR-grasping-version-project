@@ -179,7 +179,6 @@ public class MainExperimentsetup : MonoBehaviour
         public Quaternion Rotation; //rotation values
         public float Time;
     }
-
     void PreprocessCSVFile(string csvPath)
     {
         List<CubeState> cubeStates = new List<CubeState>();
@@ -223,30 +222,7 @@ public class MainExperimentsetup : MonoBehaviour
         // Store or process the preprocessed cube states as needed
         preprocessedData[csvPath] = cubeStates;
     }
-    /* record the cubes position and rotation at each timestep
-    
-    public List<CubeState> TrackSimulationData(Transform cubeTransform, float normedTime)
-    {
-        List<CubeState> simulationData = new List<CubeState>();
 
-        float time = 0f;
-        while (normedTime< 1simulation running)
-        {
-            simulationData.Add(new CubeState
-            {
-                Position = cubeTransform.position,
-                Rotation = cubeTransform.rotation,
-                Time = DateTime.Now // You might use another method to get time or normalized time
-            });
-
-            // Wait for the next frame
-            yield return new WaitForFixedUpdate();
-            time += Time.fixedDeltaTime;
-        }
-
-        return simulationData;
-    }
-    */
     void SaveDataFile(int trialNumber)
     {
         Debug.Log($"Saving data for trial {trialNumber}");
@@ -303,7 +279,7 @@ public class MainExperimentsetup : MonoBehaviour
         setupCompleted = true;
         // Step 4: Start the genetic algorithm
         Debug.Log("Starting genetic algorithm..." + setupCompleted);
-        _geneticAlgorithmManager.Start();
+        _ga.Start();
         Debug.Log("Genetic algorithm started.");
     }
 
@@ -350,13 +326,15 @@ public class MainExperimentsetup : MonoBehaviour
     {
         // Step 1: Initialize the genetic algorithm
         _ga = new GeneticAlgorithmScript(this, populationSize: 20, numberOfGenerations: 50, crossoverProbability: 0.8f, mutationProbability: 0.05f);
-        ;
 
         // Step 2: Calculate total number of simulations and shuffle animations
         int populationSize = _ga.PopulationSize;  // Access population size directly from the custom GA
         int numberOfGenerations = _ga.NumberOfGenerations;  // Access number of generations directly
 
         number_of_simulations = populationSize * numberOfGenerations;
+
+        // Debug log to check population size, generations, and number of simulations
+        Debug.Log($"Population Size: {populationSize}, Number of Generations: {numberOfGenerations}, Number of Simulations: {number_of_simulations}");
 
         shuffled_anim_indices = new int[number_of_simulations];
         int originalCount = animation_names.Length;
@@ -373,7 +351,6 @@ public class MainExperimentsetup : MonoBehaviour
         // Convert the expanded list to an array and shuffle it
         shuffled_anim_indices = expandedAnimations.ToArray();
         Shuffle(shuffled_anim_indices);
-
         Debug.Log("Genetic algorithm initialization and shuffle completed.");
         yield return null;
     }
@@ -740,52 +717,34 @@ public class MainExperimentsetup : MonoBehaviour
         // Step 1: Apply the physics parameters for the trial
         ApplyPhysicsParameters(physicsParams);
 
+        // Print the physics parameters
+        Debug.Log($"Physics parameters: {string.Join(", ", physicsParams)}");
+
+        Debug.Log("current trial number: " + currentTrialNumber);
+
         // Step 2: Select a randomized trial based on the shuffled array
         int trialIndex = shuffled_anim_indices[currentTrialNumber]; // Randomized trial selection
+        Debug.Log("anim index: " + trialIndex);
 
         // Step 3: Play the animation for the selected trial
         yield return StartCoroutine(PlayAnimationCoroutine(trialIndex));
 
-        // Step 4: Calculate the error for the trial
+        // Step 4: Calculate the error for the trial based on the current trial number
         float trialError = CalculateTrialErrorForAnimation(trialIndex);
 
         // Optional: Save the data for this trial
-        SaveDataFile(trialIndex);
+        SaveDataFile(currentTrialNumber);  // Using currentTrialNumber to save the correct trial data
 
         // Step 5: Calculate fitness based on trial error
         float fitness = 1 / (1 + trialError); // Simple fitness calculation based on error
 
-        Debug.Log($"Trial {trialIndex} complete with fitness: {fitness}");
+        Debug.Log($"Trial {currentTrialNumber} complete with fitness: {fitness}");
 
         // Step 6: Return the fitness via the callback
         onComplete(fitness);
+
+        // Increment the current trial number for the next iteration
         currentTrialNumber++;
-    }
-private IEnumerator EvaluatePopulationFitness()
-    {
-        foreach (var chromosome in _population)
-        {
-            if (!chromosome.IsEvaluated)
-            {
-                // Convert genes to float[] to be used in the simulation
-                float[] physicsParams = Array.ConvertAll(chromosome.Genes, g => (float)g);
-
-                // Run a single trial for this chromosome and wait for the fitness result
-                yield return StartCoroutine(TrialCoroutine(physicsParams, (fitness) =>
-                {
-                    chromosome.Fitness = fitness; // Set fitness after the trial completes
-                    chromosome.IsEvaluated = true; // Mark the chromosome as evaluated
-
-                    // Update the best fitness if this one is better
-                    if (chromosome.Fitness > _bestFitness)
-                    {
-                        _bestFitness = chromosome.Fitness;
-                        _bestPhysicsParams = physicsParams;
-                        Debug.Log($"New best fitness: {_bestFitness} with params: {string.Join(", ", _bestPhysicsParams)}");
-                    }
-                }));
-            }
-        }
     }
 
     #endregion

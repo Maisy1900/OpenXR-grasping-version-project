@@ -24,6 +24,8 @@ public class GeneticAlgorithmScript : MonoBehaviour
         _numberOfGenerations = numberOfGenerations;
         _crossoverProbability = crossoverProbability;
         _mutationProbability = mutationProbability;
+        PopulationSize = _populationSize;
+        NumberOfGenerations = _numberOfGenerations;
     }
 
     public void Start()
@@ -84,7 +86,7 @@ public class GeneticAlgorithmScript : MonoBehaviour
             {
                 // Convert genes to float[] to be used in the simulation
                 float[] physicsParams = chromosome.Genes.Select(g => (float)g).ToArray();
-
+                
                 // Run the simulation for this chromosome and wait for the fitness result
                 yield return _experimentSetup.StartCoroutine(_experimentSetup.TrialCoroutine(physicsParams, (fitness) =>
                                {
