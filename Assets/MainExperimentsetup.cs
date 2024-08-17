@@ -149,6 +149,7 @@ public class MainExperimentsetup : MonoBehaviour
     private bool middleCubeFirstTouched = false;
     private bool topCubeFirstTouched = false;
     #endregion
+    #region data preprocessing 
     // This method returns a boolean indicating if the cube was touched for the first time
     public bool CubeTouched(GameObject touchedCube, int cubeIndex, int trialNumber)
     {
@@ -172,6 +173,18 @@ public class MainExperimentsetup : MonoBehaviour
         }
 
         return false;
+    }
+    private System.Random _random = new System.Random();
+    void Shuffle(int[] array)
+    {
+        int p = array.Length;
+        for (int n = p - 1; n > 0; n--)
+        {
+            int r = _random.Next(0, n);
+            int t = array[r];
+            array[r] = array[n];
+            array[n] = t;
+        }
     }
     public struct CubeState
     {
@@ -252,14 +265,14 @@ public class MainExperimentsetup : MonoBehaviour
             Debug.Log($"Error saving data for trial {trialNumber}");
         }
     }
-
+    #endregion
     void Start()
     {
         Debug.Log("calling start");
-
         // Start hand calibration; the rest of the experiment will follow after calibration is complete
         StartCoroutine(SetupExperimentCoroutine());
     }
+    #region start coroutine 
     private bool setupCompleted = false;
     // Main setup coroutine that runs the whole process in sequence
     private IEnumerator SetupExperimentCoroutine()
@@ -354,20 +367,8 @@ public class MainExperimentsetup : MonoBehaviour
         Debug.Log("Genetic algorithm initialization and shuffle completed.");
         yield return null;
     }
-    //function which does 1 trial 
+    #endregion
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-
-            // Start the trials
-            if (trial_sequencer != null)
-                StopCoroutine(trial_sequencer);
-            //  trial_sequencer = StartCoroutine(ConductTrials());
-        }
-
-    }
     //conduct trials!!
     // public void StartTrials(float[] physicsParams, Action<float> onTrialComplete)
     // {
@@ -514,7 +515,7 @@ public class MainExperimentsetup : MonoBehaviour
 
     // }
     //#endregion
-    #region conduct trials logic 
+    #region trial logic 
     private void ApplyPhysicsParameters(float[] physicsParams)
     {
         Physics.defaultSolverIterations = (int)physicsParams[0];
@@ -538,42 +539,55 @@ public class MainExperimentsetup : MonoBehaviour
 
         if (animIndex < 3 && baseCubeFirstTouched) // Lifting trials
         {
-            Debug.Log($"Recording base cube results for trial {trialIndex} (Lifting)");
+            //Debug.Log($"Recording base cube results for trial {trialIndex} (Lifting)");
             RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, trialIndex, "Lifting");
         }
         else if (animIndex >= 3 && animIndex < 6 && baseCubeFirstTouched) // Pushing trials
         {
-            Debug.Log($"Recording base cube results for trial {trialIndex} (Pushing)");
+            //Debug.Log($"Recording base cube results for trial {trialIndex} (Pushing)");
             RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, trialIndex, "Pushing");
         }
         else if (animIndex >= 6) // Stacking trials
         {
             if (baseCubeFirstTouched)
             {
-                Debug.Log($"Recording base cube results for trial {trialIndex} (Stacking)");
+                //Debug.Log($"Recording base cube results for trial {trialIndex} (Stacking)");
                 RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, trialIndex, "Stacking_Base");
             }
             if (middleCubeFirstTouched)
             {
-                Debug.Log($"Recording middle cube results for trial {trialIndex} (Stacking)");
+                //Debug.Log($"Recording middle cube results for trial {trialIndex} (Stacking)");
                 RecordResults(dataclassMid, cubeReseters[1].transform.position, cubeReseters[1].transform.rotation, wristPos, normedTime, trialIndex, "Stacking_Middle");
             }
             if (topCubeFirstTouched)
             {
-                Debug.Log($"Recording top cube results for trial {trialIndex} (Stacking)");
+                //Debug.Log($"Recording top cube results for trial {trialIndex} (Stacking)");
                 RecordResults(dataclassTop, cubeReseters[2].transform.position, cubeReseters[2].transform.rotation, wristPos, normedTime, trialIndex, "Stacking_Top");
             }
         }
     }
+
+    private float GetScalingFactorForTrial(int animIndex)
+    {
+        if (animIndex < 3) // Lifting
+            return 0.8f;
+        else if (animIndex < 6) // Pushing
+            return 1.0f;
+        else // Stacking
+            return 1.2f;
+    }
+
+
     private float CalculateTrialErrorForAnimation(int animIndex)
     {
         float trialError = 0f;
+        float scalingFactor = GetScalingFactorForTrial(animIndex); // Get the scaling factor based on trial type
 
         if (animIndex >= 0 && animIndex < 6) // Lifting and Pushing animations
         {
             string baseCsvKey = csvPaths[animIndex];
             List<CubeState> baseCubeStates = preprocessedData[baseCsvKey];
-            trialError = CalculateTrialError(dataclassBase, baseCubeStates);
+            trialError = CalculateTrialError(dataclassBase, baseCubeStates, null, null, null, null, scalingFactor) ; // Pass scaling factor
         }
         else if (animIndex >= 6) // Stacking animations
         {
@@ -585,24 +599,23 @@ public class MainExperimentsetup : MonoBehaviour
             List<CubeState> middleCubeStates = preprocessedData[middleCsvKey];
             List<CubeState> topCubeStates = preprocessedData[topCsvKey];
 
-            trialError = CalculateTrialError(dataclassBase, baseCubeStates, dataclassMid, middleCubeStates, dataclassTop, topCubeStates);
+            trialError = CalculateTrialError(dataclassBase, baseCubeStates, dataclassMid, middleCubeStates, dataclassTop, topCubeStates, scalingFactor); // Pass scaling factor
         }
 
         return trialError;
     }
 
-
-    #endregion
     private float CalculateTrialError(DataClass baseTrialData, List<CubeState> baseCubeStates,
                                       DataClass middleTrialData = null, List<CubeState> middleCubeStates = null,
-                                      DataClass topTrialData = null, List<CubeState> topCubeStates = null)
+                                      DataClass topTrialData = null, List<CubeState> topCubeStates = null,
+                                      float scalingFactor = 1.0f) // Accept scaling factor as parameter
     {
         float totalPositionError = 0f;
         float totalRotationError = 0f;
         int numCubes = 0;  // Count how many cubes have valid data
         int count;
 
-        // Check if base cube data exists and is valid
+        // Base cube error calculation
         if (baseTrialData.cubePos.Count > 0 && baseCubeStates.Count > 0)
         {
             count = Mathf.Min(baseTrialData.cubePos.Count, baseCubeStates.Count);
@@ -610,16 +623,16 @@ public class MainExperimentsetup : MonoBehaviour
             {
                 Vector3 simulatedPos = baseTrialData.cubePos[i];
                 Vector3 preprocessedPos = baseCubeStates[i].Position;
-                totalPositionError += Vector3.Distance(simulatedPos, preprocessedPos);
+                totalPositionError += Vector3.Distance(simulatedPos, preprocessedPos); // No scaling yet
 
                 Quaternion simulatedRot = Quaternion.Euler(baseTrialData.cubeRot[i]);
                 Quaternion preprocessedRot = baseCubeStates[i].Rotation;
-                totalRotationError += Quaternion.Angle(simulatedRot, preprocessedRot);
+                totalRotationError += Quaternion.Angle(simulatedRot, preprocessedRot); // No scaling yet
             }
-            numCubes++;  // Base cube data exists
+            numCubes++;
         }
 
-        // Check if middle cube data exists and is valid (only for stacking trials)
+        // Middle cube error calculation (only for stacking trials)
         if (middleCubeStates != null && middleTrialData != null && middleTrialData.cubePos.Count > 0 && middleCubeStates.Count > 0)
         {
             count = Mathf.Min(middleTrialData.cubePos.Count, middleCubeStates.Count);
@@ -633,10 +646,10 @@ public class MainExperimentsetup : MonoBehaviour
                 Quaternion preprocessedRot = middleCubeStates[i].Rotation;
                 totalRotationError += Quaternion.Angle(simulatedRot, preprocessedRot);
             }
-            numCubes++;  // Middle cube data exists
+            numCubes++;
         }
 
-        // Check if top cube data exists and is valid (only for stacking trials)
+        // Top cube error calculation (only for stacking trials)
         if (topCubeStates != null && topTrialData != null && topTrialData.cubePos.Count > 0 && topCubeStates.Count > 0)
         {
             count = Mathf.Min(topTrialData.cubePos.Count, topCubeStates.Count);
@@ -650,7 +663,7 @@ public class MainExperimentsetup : MonoBehaviour
                 Quaternion preprocessedRot = topCubeStates[i].Rotation;
                 totalRotationError += Quaternion.Angle(simulatedRot, preprocessedRot);
             }
-            numCubes++;  // Top cube data exists
+            numCubes++;
         }
 
         // If no cubes had valid data, return a large default error value to indicate a failure
@@ -658,6 +671,10 @@ public class MainExperimentsetup : MonoBehaviour
         {
             return float.MaxValue;  // Return a high error to indicate failure due to no data
         }
+
+        // Apply the scaling factor to the total errors
+        totalPositionError *= scalingFactor;
+        totalRotationError *= scalingFactor;
 
         // Calculate average error per cube to normalize the fitness
         float averagePositionError = totalPositionError / numCubes;
@@ -678,23 +695,13 @@ public class MainExperimentsetup : MonoBehaviour
         else
             return "stack";
     }
-    private System.Random _random = new System.Random();
-    void Shuffle(int[] array)
-    {
-        int p = array.Length;
-        for (int n = p - 1; n > 0; n--)
-        {
-            int r = _random.Next(0, n);
-            int t = array[r];
-            array[r] = array[n];
-            array[n] = t;
-        }
-    }
+#endregion
+
 
     #region coroutines for animations
 
 
-    public IEnumerator PlayAnimationCoroutine(int animIndex)
+    public IEnumerator PlayAnimationCoroutine(int animIndex, int currentTrialNumber)
     {
         // Play the corresponding animation
         Debug.Log($"Playing animation: {animation_names[animIndex]}");
@@ -706,6 +713,9 @@ public class MainExperimentsetup : MonoBehaviour
         {
             // Get the normalized time of the animation (0 to 1, where 1 means animation is finished)
             normedTime = main_anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
+                    // Record the trial results at this frame (pass trialIndex to identify which trial it is)
+            RecordTrialResults(animIndex, normedTime, currentTrialNumber);
+
             yield return null; // Wait for the next frame
         }
 
@@ -728,27 +738,42 @@ public class MainExperimentsetup : MonoBehaviour
         Debug.Log("anim index: " + trialIndex);
 
         // Step 3: Play the animation for the selected trial
-        yield return StartCoroutine(PlayAnimationCoroutine(trialIndex));
-
+        yield return StartCoroutine(PlayAnimationCoroutine(trialIndex, currentTrialNumber));
+        yield return new WaitForSeconds(1.0f);
         // Step 4: Calculate the error for the trial based on the current trial number
         float trialError = CalculateTrialErrorForAnimation(trialIndex);
-
-        // Optional: Save the data for this trial
-        SaveDataFile(currentTrialNumber);  // Using currentTrialNumber to save the correct trial data
 
         // Step 5: Calculate fitness based on trial error
         float fitness = 1 / (1 + trialError); // Simple fitness calculation based on error
 
-        Debug.Log($"Trial {currentTrialNumber} complete with fitness: {fitness}");
+        Debug.Log($"Trial {currentTrialNumber} complete with fitness: {fitness} and trial error: {trialError}");
 
         // Step 6: Return the fitness via the callback
         onComplete(fitness);
+        // Step 1: Save the data for the current trial (which already clears the lists)
 
+        yield return StartCoroutine(Save(currentTrialNumber));
+        yield return StartCoroutine(SetupNext());
         // Increment the current trial number for the next iteration
         currentTrialNumber++;
     }
+    public IEnumerator SetupNext()
+    {
+        yield return null;
+        // Step 3: Reset cubes to their original positions
+        ResetCubes();
 
-    #endregion
+        // Step 4: Clear any touch tracking or trial-specific flags to ensure a clean state
+        baseCubeFirstTouched = false;
+        middleCubeFirstTouched = false;
+        topCubeFirstTouched = false;
+    }
+    public IEnumerator Save(int currentTrialNumber)
+    {
+        SaveDataFile(currentTrialNumber);
+        yield return null;
+    }
+        #endregion
 
 
-}
+    }

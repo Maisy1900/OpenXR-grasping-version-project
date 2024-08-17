@@ -44,7 +44,7 @@ private void OnCollisionEnter(Collision collision)
     if (collision.gameObject.tag == "idx_tip")
     {
         // Notify MainExperimentsetup that the cube was touched
-        Debug.Log("Cube " + cubeIndex + " touched by idx_tip.");
+        //Debug.Log("Cube " + cubeIndex + " touched by idx_tip.");
         if (mainExperimentSetup != null)
         {
                 int trialNumber = mainExperimentSetup.currentTrialNumber;
