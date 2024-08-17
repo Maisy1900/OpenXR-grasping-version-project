@@ -1,54 +1,65 @@
-using GeneticSharp.Domain.Fitnesses;
-using GeneticSharp.Domain.Chromosomes;
-using System.Linq;
-using System.Threading;
-using UnityEngine;
+// using GeneticSharp.Domain.Fitnesses;
+// using GeneticSharp.Domain.Chromosomes;
+// using System;  // For InvalidOperationException and Math
+// using System.Linq;  // For LINQ methods like Select()
+// using UnityEngine;
+// using System.Collections;
 
-public class FitnessEvaluator : IFitness
-{
-    private MainExperimentsetup experimentSetup;
-    private bool trialCompleted;
-    private float trialError;
+// public class FitnessEvaluator : IFitness
+// {
+//     private MainExperimentsetup experimentSetup;
+//     private float trialError;
+//     private bool fitnessReady;
 
-    public FitnessEvaluator(MainExperimentsetup setup)
-    {
-        this.experimentSetup = setup;
-    }
+//     public FitnessEvaluator(MainExperimentsetup setup)
+//     {
+//         this.experimentSetup = setup;
+//     }
 
-    public double Evaluate(IChromosome chromosome)
-    {
-        // Convert the chromosome to physics parameters
-    var floatChromosome = chromosome as FloatingPointChromosome;
-    float[] physicsParams = floatChromosome.ToFloatingPoints().Select(x => Mathf.Clamp((float)x, 0f, 100f)).ToArray();  // Adjust these bounds
+//     public double Evaluate(IChromosome chromosome)
+//     {
+//         // Ensure the chromosome is of type CNGChromosome
+//         var cngChromosome = chromosome as CNGChromosome;
+//         if (cngChromosome == null)
+//         {
+//             throw new InvalidOperationException("Chromosome is not a CNGChromosome.");
+//         }
 
+//         // Get the gene values as an array of floats (physics parameters)
+//         double[] physicsParamsDouble = cngChromosome.ToFloatingPoints();
+//         float[] physicsParams = physicsParamsDouble.Select(x => (float)Math.Round(x, 5)).ToArray();
 
-        // Reset error value
-        trialError = 0f;
-        trialCompleted = false;
+//         // Reset fitness-related values
+//         fitnessReady = false;
+//         trialError = 0f;
 
-        // Start the trials asynchronously using a callback
-        experimentSetup.StartTrials(physicsParams, OnTrialComplete);
-        Debug.Log("starting trials");
+//         // Start the trials asynchronously using a coroutine
+//         experimentSetup.StartCoroutine(ConductTrialsAndCalculateFitness(physicsParams));
 
-        // Wait for trial completion
-        while (!trialCompleted)
-        {
-            Thread.Sleep(3);  // Small delay to prevent locking the main thread
-        }
+//         // We return 0 here temporarily until the fitness is calculated
+//         // We'll update the system when the coroutine finishes, which you can track
+//         return 0; // Temporary return value
+//     }
 
-        // Log the fitness result for this chromosome
-        Debug.Log($"Fitness for chromosome: {1 / (1 + trialError)} with error: {trialError}");
+//     private IEnumerator ConductTrialsAndCalculateFitness(float[] physicsParams)
+//     {
+//         // Trigger the trials
+//         experimentSetup.StartTrials(physicsParams, OnTrialComplete);
 
-        // Return fitness value based on error (higher fitness = lower error)
-        return 1 / (1 + trialError);  // Prevent division by zero
-    }
+//         // Wait for the trial to complete
+//         while (!fitnessReady)
+//         {
+//             yield return null; // Wait for the next frame
+//         }
 
-    private void OnTrialComplete(float error)
-    {
-        // Log the trial error received from the simulation
-        Debug.Log($"Trial complete with error: {error}");
+//         // Calculate and log fitness once the trial is done
+//         double fitness = 1 / (1 + trialError);
+//         Debug.Log($"Fitness for chromosome: {fitness} with error: {trialError}");
+//     }
 
-        trialError = error;
-        trialCompleted = true; // Signal that the trial has finished
-    }
-}
+//     private void OnTrialComplete(float error)
+//     {
+//         trialError = error;
+//         fitnessReady = true; // Mark the fitness as ready
+//     }
+// }

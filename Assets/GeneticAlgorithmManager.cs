@@ -1,69 +1,74 @@
-using GeneticSharp.Domain;
-using GeneticSharp.Domain.Chromosomes;
-using GeneticSharp.Domain.Crossovers;
-using GeneticSharp.Domain.Mutations;
-using GeneticSharp.Domain.Populations;
-using GeneticSharp.Domain.Selections;
-using GeneticSharp.Domain.Terminations;
+// using GeneticSharp.Domain;
+// using GeneticSharp.Domain.Chromosomes;
+// using GeneticSharp.Domain.Crossovers;
+// using GeneticSharp.Domain.Mutations;
+// using GeneticSharp.Domain.Populations;
+// using GeneticSharp.Domain.Selections;
+// using GeneticSharp.Domain.Terminations;
+// using UnityEngine;
+// using System;
 
-public class GeneticAlgorithmManager
-{
-    private GeneticAlgorithm _ga;
-    private FitnessEvaluator _fitnessEvaluator;
+// public class GeneticAlgorithmManager
+// {
+//     private GeneticAlgorithm _ga;
+//     private MainExperimentsetup _experimentSetup;
+//     private int _numberOfGenerations; // Declare _numberOfGenerations here at the class level
 
-    public GeneticAlgorithmManager(MainExperimentsetup experimentSetup)
-    { 
-        _fitnessEvaluator = new FitnessEvaluator(experimentSetup); // Pass experimentSetup to the fitness evaluator
-        
-        /*            // Setup physics parameters for this trial
-            Physics.defaultSolverIterations = 10; // [3-40] in step size of 1
-            Physics.defaultSolverVelocityIterations = 5; // [1-40]
-            Physics.defaultContactOffset = 0.01f; // [0.001,0.1]
-            Physics.defaultMaxDepenetrationVelocity = 10; // [1-100]
-            Physics.bounceThreshold = 2; // [0.1-4]
-            Debug.Log("Physics parameters adjusted!");
-        */
-        // Define the chromosome and population as before
-        var chromosome = new CNGChromosome(
-            lowerBounds: new double[] { 3, 5, 0.001, 1, 0.1 },
-            upperBounds: new double[] { 40, 40, 0.1, 100, 4 },
-            totalBits: new int[] { 8, 8, 8, 8, 8 },
-            fractionalBits: new int[] { 4, 4, 4, 4, 4 }
-        );
+//     public GeneticAlgorithmManager(MainExperimentsetup experimentSetup)
+//     {
+//         if (experimentSetup == null)
+//         {
+//             throw new ArgumentNullException(nameof(experimentSetup), "MainExperimentsetup cannot be null.");
+//         }
 
-        var population = new Population(50, 100, chromosome);
+//         _experimentSetup = experimentSetup;
 
-        // Setup fitness function
-        var fitness = _fitnessEvaluator; 
+//         // Define the chromosome and population
+//         var chromosome = new CNGChromosome(
+//             lowerBounds: new double[] { 3, 5, 0.001, 1, 0.1 },
+//             upperBounds: new double[] { 40, 40, 0.1, 100, 4 }
+//         );
 
-        // Set the selection method
-        var selection = new TournamentSelection(); // Or TournamentSelection, EliteSelection, etc.
+//         var population = new Population(20, 50, chromosome);
 
-        // Set the crossover method and probability
-        var crossover = new OnePointCrossover();
+//         // Set the selection method
+//         var selection = new TournamentSelection();
 
-        // Set the mutation method and probability
-        var mutation = new UniformMutation(); // No need to set MutationProbability
+//         // Set the crossover method and probability
+//         var crossover = new OnePointCrossover();
 
+//         // Set the mutation method and probability
+//         var mutation = new UniformMutation();
 
-        // Set a fixed number of generations for the algorithm
-        var termination = new GenerationNumberTermination(50); // Stop after 50 generations
+//         // Set the number of generations here
+//         _numberOfGenerations = 50;
 
-        // Initialize the GeneticAlgorithm object with the chosen operators
-        _ga = new GeneticAlgorithm(population, fitness, selection, crossover, mutation)
-        {
-            Termination = termination
-        };
+//         // Set a fixed number of generations for the algorithm
+//         var termination = new GenerationNumberTermination(_numberOfGenerations);
 
-        // Set the probabilities after initialization
-        _ga.CrossoverProbability = 0.8f; // 80% crossover probability
-        _ga.MutationProbability = 0.05f;  // 5% mutation probability
+//         // Pass the MainExperimentsetup instance as the fitness evaluator
+//         _ga = new GeneticAlgorithm(population, _experimentSetup, selection, crossover, mutation)
+//         {
+//             Termination = termination,
+//             CrossoverProbability = 0.8f,
+//             MutationProbability = 0.05f
+//         };
+//     }
 
-    }
+//     public void Start()
+//     {
+//         _ga.Start();
+//         Debug.Log("GA started");
+//     }
 
-    public void Start()
-    {
-        _ga.Start();
+//     // Get the number of generations (from the stored value)
+//     public int GetNumberOfGenerations()
+//     {
+//         return _numberOfGenerations;
+//     }
 
-    }
-}
+//     public IPopulation GetPopulation()
+//     {
+//         return _ga.Population;
+//     }
+// }

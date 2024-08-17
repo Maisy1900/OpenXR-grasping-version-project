@@ -94,7 +94,7 @@ public class MainExperimentsetup : MonoBehaviour
     public string[] animation_names = new string[] { "lift_1", "lift_2", "lift_3", "push_1", "push_2", "push_3", "stack_1", "stack_2", "stack_3" };
     private int[] shuffled_anim_indices;
     public int currentTrialNumber = 0; // Store the current trial number
-    private GeneticAlgorithmManager _geneticAlgorithmManager;
+    private GeneticAlgorithmScript _geneticAlgorithmManager;
 
     public ResetPosition[] cubeReseters;
 
@@ -105,7 +105,14 @@ public class MainExperimentsetup : MonoBehaviour
     // Dictionary to track first touch and store positions
     private Dictionary<GameObject, bool> cubeTouchedStatus;
     private Dictionary<GameObject, CubeState> initialCubeStates;
+
+    private float bestFitness = float.MinValue;
+    private float[] bestPhysicsParams;
+
+    private bool isEvaluating = false; // Add this flag to manage concurrency
     // Function to record results (check if this is a bottleneck)  
+
+    private GeneticAlgorithmScript _ga;
     void RecordResults(DataClass dataclass, Vector3 cubePosition, Quaternion cubeRotation, Vector3 handPose, float timing, int trialNumber, string trialCondition)
     {
         // Record cube position, rotation, hand position, timing, trial condition, and fps
@@ -272,32 +279,86 @@ public class MainExperimentsetup : MonoBehaviour
 
     void Start()
     {
+        Debug.Log("calling start");
+
+        // Start hand calibration; the rest of the experiment will follow after calibration is complete
+        StartCoroutine(SetupExperimentCoroutine());
+    }
+    private bool setupCompleted = false;
+    // Main setup coroutine that runs the whole process in sequence
+    private IEnumerator SetupExperimentCoroutine()
+    {
+
+        // Step 1: Run hand calibration and wait for it to complete
+        Debug.Log("Starting hand calibration...");
+        yield return StartCoroutine(HandCalibrationCoroutine());
+
+        // Step 2: Set up the experiment after calibration
+        Debug.Log("Setting up experiment...");
+        yield return StartCoroutine(ExperimentSetupCoroutine());
+
+        // Step 3: Initialize and start the genetic algorithm after experiment setup
+        Debug.Log("Initializing genetic algorithm...");
+        yield return StartCoroutine(InitializeGeneticAlgorithmCoroutine());
+        setupCompleted = true;
+        // Step 4: Start the genetic algorithm
+        Debug.Log("Starting genetic algorithm..." + setupCompleted);
+        _geneticAlgorithmManager.Start();
+        Debug.Log("Genetic algorithm started.");
+    }
+
+    // Coroutine for hand calibration
+    private IEnumerator HandCalibrationCoroutine()
+    {
+        // Step 1: Play calibration animation
+        main_anim.Play("Calibration hand", 0);
+
+        // Step 2: Wait for the animation and calibration process
+        yield return new WaitForSeconds(1.0f);  // Wait for calibration animation
+        articulationDriver_real.MeasureInitialAngles();
+        yield return new WaitForSeconds(1.0f);  // Wait for measurement to complete
+
+        // Step 3: Stop the calibration animation
+        main_anim.StopPlayback();
+        Debug.Log("Hand calibration completed.");
+    }
+
+    // Coroutine to set up the experiment after calibration
+    private IEnumerator ExperimentSetupCoroutine()
+    {
+        // Initialize data classes and cube state tracking
         cubeTouchedStatus = new Dictionary<GameObject, bool>();
         initialCubeStates = new Dictionary<GameObject, CubeState>();
         dataclassBase = new DataClass();
         dataclassMid = new DataClass();
         dataclassTop = new DataClass();
-        // Read all cube animation data files (.csv)
-        // And put these into float arrays e.g. cube_pos_x[0][0], or cube_rot_y
-        // obj  [task_index] [animation_index]
-        // Initialize the dictionary
-        preprocessedData = new Dictionary<string, List<CubeState>>();
-        _geneticAlgorithmManager = new GeneticAlgorithmManager(this);
 
-        // Preprocess each CSV file
+        // Read and preprocess all cube animation data files (.csv)
+        preprocessedData = new Dictionary<string, List<CubeState>>();
         foreach (string csvPath in csvPaths)
         {
             PreprocessCSVFile(csvPath);
+            yield return null;  // Allow one frame for each file processed to prevent blocking
         }
+        Debug.Log("CSV preprocessing completed.");
 
-        main_anim.StopPlayback();
+        Debug.Log("Experiment setup completed.");
+    }
 
+    // Coroutine to initialize the genetic algorithm after the experiment setup
+    private IEnumerator InitializeGeneticAlgorithmCoroutine()
+    {
+        // Step 1: Initialize the genetic algorithm
+        _ga = new GeneticAlgorithmScript(this, populationSize: 20, numberOfGenerations: 50, crossoverProbability: 0.8f, mutationProbability: 0.05f);
+        ;
 
-        // Calculate the total number of simulations
-        number_of_simulations = number_of_simulation_blocks * animation_names.Length;
+        // Step 2: Calculate total number of simulations and shuffle animations
+        int populationSize = _ga.PopulationSize;  // Access population size directly from the custom GA
+        int numberOfGenerations = _ga.NumberOfGenerations;  // Access number of generations directly
+
+        number_of_simulations = populationSize * numberOfGenerations;
+
         shuffled_anim_indices = new int[number_of_simulations];
-
-        // Skip the first animation (calibration) and start from index 1
         int originalCount = animation_names.Length;
 
         // Create a list to hold the expanded array of animations
@@ -306,22 +367,17 @@ public class MainExperimentsetup : MonoBehaviour
         // Duplicate the original animations (excluding the first one) to fill the required number of trials
         for (int i = 0; i < number_of_simulations; i++)
         {
-            // Add the animations starting from index 1 to ignore calibration
-            expandedAnimations.Add((i % originalCount));
+            expandedAnimations.Add((i % originalCount));  // Fill expanded array
         }
 
-        // Convert the list back to an array and assign it to the animationz variable
+        // Convert the expanded list to an array and shuffle it
         shuffled_anim_indices = expandedAnimations.ToArray();
-
-
-        // Now shuffle this expanded array
         Shuffle(shuffled_anim_indices);
-        // Create the GeneticAlgorithmManager and start the genetic algorithm
-        _geneticAlgorithmManager = new GeneticAlgorithmManager(this);
 
-        // Start the genetic algorithm
-        _geneticAlgorithmManager.Start();
+        Debug.Log("Genetic algorithm initialization and shuffle completed.");
+        yield return null;
     }
+    //function which does 1 trial 
 
     private void Update()
     {
@@ -335,171 +391,231 @@ public class MainExperimentsetup : MonoBehaviour
         }
 
     }
-    public void StartTrials(float[] physicsParams, Action<float> onTrialComplete)
+    //conduct trials!!
+    // public void StartTrials(float[] physicsParams, Action<float> onTrialComplete)
+    // {
+    //     trialCompleted = false;
+    //     StartCoroutine(ConductTrials(physicsParams, onTrialComplete));
+    // }
+
+
+    // public IEnumerator EvaluateCoroutine(float[] physicsParams, Action<float> onTrialComplete)
+    // {
+    //     float totalError = 0f;
+    //     bool fitnessReady = false;
+
+    //     for (int trialIndex = 0; trialIndex < number_of_simulations; trialIndex++)
+    //     {
+    //         Debug.Log("Number of simulations to run: " + number_of_simulations);
+    //         float trialError = 0f;
+    //         fitnessReady = false;
+    //         isEvaluating = true; // Start evaluating for this trial
+
+    //         Debug.Log($"Starting trial {trialIndex} with physicsParams: {string.Join(", ", physicsParams)}");
+
+    //         // Start the trial and set a callback to capture the error when the trial is done
+    //         StartTrials(physicsParams, (error) =>
+    //         {
+    //             trialError = error;
+    //             fitnessReady = true; // Mark the trial as complete
+    //             Debug.Log($"Trial {trialIndex} complete with trialError: {trialError}");
+    //         });
+
+    //         // Wait until the trial completes
+    //         while (!fitnessReady)
+    //         {
+    //             yield return null; // Wait for the next frame
+    //         }
+
+    //         // Accumulate the total error from all trials
+    //         totalError += trialError;
+
+    //         Debug.Log($"Total error after trial {trialIndex}: {totalError}");
+
+    //         // Reset isEvaluating for the next trial
+    //         isEvaluating = false;
+    //     }
+
+    //     // Calculate the average error across all trials
+    //     float averageError = totalError / number_of_simulations;
+
+    //     // Calculate the fitness based on the average error
+    //     float fitness = 1 / (1 + averageError);
+
+    //     // Log and return the final fitness
+    //     Debug.Log($"Final fitness calculated from average error: {fitness}");
+    //     onTrialComplete(averageError); // Invoke the callback with the average error
+
+    //     // This marks the end of all evaluations
+    //     isEvaluating = false;
+    // }
+    //#region conductTrials
+    // // Function to conduct trials
+    // public IEnumerator ConductTrials(float[] physicsParams, Action<float> onTrialComplete)
+    // {
+    //     // Reset cube objects 
+    //     ResetCubes();
+    //     //Running the hand calibration
+    //     main_anim.Play("Calibration hand", 0);
+    //     yield return new WaitForSeconds(1.0f);
+    //     articulationDriver_real.MeasureInitialAngles();
+    //     yield return new WaitForSeconds(1.0f);
+    //     main_anim.StopPlayback();
+    //     Debug.Log("Calibration is over");
+    //     float totalError = 0f;
+
+    //     //running the simulation 
+    //     for (int i = 0; i < number_of_simulations; i++)
+    //     {
+    //         #region resetting values and setting values for the trial
+    //         currentTrialNumber = i;
+    //         // Reset cube objects for each trial 
+    //         ResetCubes();
+    //         // Reset touch tracking for new trial
+
+    //         baseCubeFirstTouched = false;
+    //         middleCubeFirstTouched = false;
+    //         topCubeFirstTouched = false;
+    //         float trialError = 0f;
+    //         int animIndex = shuffled_anim_indices[i];
+
+    //         Debug.Log("Trial: " + i.ToString() + " out of: " + number_of_simulations.ToString());
+    //         //Debug.Log("Anim index: " + shuffled_anim_indices[i].ToString());
+    //         //Debug.Log("Anim: " + animation_names[shuffled_anim_indices[i]]);
+
+    //         //Apply dynamic physics parameters
+    //         //Debug.Log($"Applying physics parameters: {string.Join(", ", physicsParams)}");
+    //         ApplyPhysicsParameters(physicsParams);
+    //         // Debug.Log("Starting trials with physics params: " + string.Join(",", physicsParams));
+    //         Debug.Log("Physics parameters adjusted!");
+
+
+    //         // Play the corresponding animation
+    //         main_anim.Play(animation_names[shuffled_anim_indices[i]], 0);
+    //         // bool animstate = main_anim.GetCurrentAnimatorStateInfo(0).IsName(animation_names[shuffled_anim_indices[i]]);
+    //         Debug.Log("Animation playing!");
+    //         float normedTime = 0f;
+    //         #endregion
+    //         // Wait for the animation to complete
+    //         while (normedTime < 1)
+    //         {
+    //             normedTime = main_anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
+
+    //             RecordTrialResults(animIndex, normedTime, i);
+    //             yield return null;
+    //         }
+    //         // Once animation has finished, calculate total error (fitness) for this trial
+    //         //match the current animation with the csv holding the preprocessed data 
+    //         trialError = CalculateTrialErrorForAnimation(animIndex);
+
+    //         // Calculate error between simulation and preprocessed data
+    //         List<CubeState> preprocessedCubeStates = preprocessedData[csvPaths[i]];
+
+    //         // Callback with the trial error
+    //         Debug.Log("Animation Done");
+    //         main_anim.StopPlayback();
+    //         string trialType = DetermineTrialType(i);
+
+    //         SaveDataFile(i);  // This will save the data from base, middle, and top cubes to separate CSV files
+
+    //         // Optionally, add a short delay between trials
+    //         yield return new WaitForSeconds(1.0f);
+    //         Debug.Log("Trial " + i + " done");
+    //         Debug.Log($"Trial {i} complete with error {trialError}.");
+
+    //         onTrialComplete(trialError);
+    //         //wait for the physics parameters to update 
+    //         trialCompleted = true;
+    //         yield return new WaitForSeconds(3.0f);
+    //     }
+
+    //     // Record data into a file (not essential)
+
+
+    //     Debug.Log("All trials complete");
+    //     yield return null;
+
+    // }
+    //#endregion
+    #region conduct trials logic 
+    private void ApplyPhysicsParameters(float[] physicsParams)
     {
-        trialCompleted = false;
-        StartCoroutine(ConductTrials(physicsParams, onTrialComplete));
+        Physics.defaultSolverIterations = (int)physicsParams[0];
+        Physics.defaultSolverVelocityIterations = (int)physicsParams[1];
+        Physics.defaultContactOffset = physicsParams[2];
+        Physics.defaultMaxDepenetrationVelocity = physicsParams[3];
+        Physics.bounceThreshold = physicsParams[4];
+
+        Debug.Log("Physics parameters adjusted!");
     }
 
-    #region conductTrials
-    // Function to conduct trials
-    public IEnumerator ConductTrials(float[] physicsParams, Action<float> onTrialComplete)
+    private void ResetCubes()
     {
-        // Reset cube objects 
         cubeReseters[0].ResetCubes();
         cubeReseters[1].ResetCubes();
         cubeReseters[2].ResetCubes();
+    }
+    private void RecordTrialResults(int animIndex, float normedTime, int trialIndex)
+    {
+        Vector3 wristPos = GetWristPosition();  // Get wrist position from articulationObject
 
-        //Running the hand calibration
-        main_anim.Play("Calibration hand", 0);
-        yield return new WaitForSeconds(1.0f);
-        articulationDriver_real.MeasureInitialAngles();
-        yield return new WaitForSeconds(1.0f);
-        main_anim.StopPlayback();
-        Debug.Log("Calibration is over");
-        float totalError = 0f;
-
-        //running the simulation 
-        for (int i = 0; i < number_of_simulations; i++)
+        if (animIndex < 3 && baseCubeFirstTouched) // Lifting trials
         {
-            #region resetting values and setting values for the trial
-            currentTrialNumber = i;
-            // Reset cube objects for each trial 
-            cubeReseters[0].ResetCubes();
-            cubeReseters[1].ResetCubes();
-            cubeReseters[2].ResetCubes();
-
-            // Reset touch tracking for new trial
-            baseCubeFirstTouched = false;
-            middleCubeFirstTouched = false;
-            topCubeFirstTouched = false;
-            float normedTime = 0f;
-            float trialError = 0f;
-            Debug.Log("Trial: " + i.ToString() + " out of: " + number_of_simulations.ToString());
-            Debug.Log("Anim index: " + shuffled_anim_indices[i].ToString());
-            Debug.Log("Anim: " + animation_names[shuffled_anim_indices[i]]);
-            int animIndex = shuffled_anim_indices[i];
-            //Apply dynamic physics parameters
-            Physics.defaultSolverIterations = (int)physicsParams[0];
-            Physics.defaultSolverVelocityIterations = (int)physicsParams[1];
-            Physics.defaultContactOffset = physicsParams[2];
-            Physics.defaultMaxDepenetrationVelocity = physicsParams[3];
-            Physics.bounceThreshold = physicsParams[4];
-            Debug.Log("Starting trials with physics params: " + string.Join(",", physicsParams));
-
-            Debug.Log("Physics parameters adjusted!");
-
-            // Play the corresponding animation
-            main_anim.Play(animation_names[shuffled_anim_indices[i]], 0);
-            bool animstate = main_anim.GetCurrentAnimatorStateInfo(0).IsName(animation_names[shuffled_anim_indices[i]]);
-            Debug.Log("Animation playing!");
-            #endregion
-            // Wait for the animation to complete
-            while (normedTime < 1)
+            Debug.Log($"Recording base cube results for trial {trialIndex} (Lifting)");
+            RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, trialIndex, "Lifting");
+        }
+        else if (animIndex >= 3 && animIndex < 6 && baseCubeFirstTouched) // Pushing trials
+        {
+            Debug.Log($"Recording base cube results for trial {trialIndex} (Pushing)");
+            RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, trialIndex, "Pushing");
+        }
+        else if (animIndex >= 6) // Stacking trials
+        {
+            if (baseCubeFirstTouched)
             {
-                normedTime = main_anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
-
-                Vector3 wristPos = GetWristPosition();  // Get wrist position from articulationObject
-
-                if (animIndex < 3 && baseCubeFirstTouched) // Lifting and Pushing trials
-                {
-                    Debug.Log($"Recording base cube results for trial {i} (Lifting)");
-                    RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, i, "Lifting");
-                }
-
-                if (animIndex >= 3 && animIndex < 6 && baseCubeFirstTouched) // Lifting and Pushing trials
-                {
-                    Debug.Log($"Recording base cube results for trial {i} (Pushing)");
-                    RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, i, "Pushing");
-                }
-                else // Stacking trials
-                {
-                    if (animIndex >= 6 && baseCubeFirstTouched)
-                    {
-                        Debug.Log($"Recording base cube results for trial {i} (Stacking)");
-                        RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, i, "Stacking_Base");
-                    }
-
-                    if (animIndex >= 6 && middleCubeFirstTouched)
-                    {
-                        Debug.Log($"Recording middle cube results for trial {i} (Stacking)");
-                        RecordResults(dataclassMid, cubeReseters[1].transform.position, cubeReseters[1].transform.rotation, wristPos, normedTime, i, "Stacking_Middle");
-                    }
-
-                    if (animIndex >= 6 && topCubeFirstTouched)
-                    {
-                        Debug.Log($"Recording top cube results for trial {i} (Stacking)");
-                        RecordResults(dataclassTop, cubeReseters[2].transform.position, cubeReseters[2].transform.rotation, wristPos, normedTime, i, "Stacking_Top");
-                    }
-                }
-
-                yield return null;
+                Debug.Log($"Recording base cube results for trial {trialIndex} (Stacking)");
+                RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, trialIndex, "Stacking_Base");
             }
-
-            // Once animation has finished, calculate total error (fitness) for this trial
-            //match the current animation with the csv holding the preprocessed data 
-            if (animIndex >= 0 && animIndex < 6)
+            if (middleCubeFirstTouched)
             {
-                // For lifting and pushing animations (index 0-5)
-                string baseCsvKey = csvPaths[animIndex];
-                List<CubeState> baseCubeStates = preprocessedData[baseCsvKey];
-                trialError = CalculateTrialError(dataclassBase, baseCubeStates);
-                // Use cubeStates in your simulation or trial logic
+                Debug.Log($"Recording middle cube results for trial {trialIndex} (Stacking)");
+                RecordResults(dataclassMid, cubeReseters[1].transform.position, cubeReseters[1].transform.rotation, wristPos, normedTime, trialIndex, "Stacking_Middle");
             }
-            else if (animIndex >= 6 && animIndex < 9)
+            if (topCubeFirstTouched)
             {
-                // For stacking animations (index 6-8)
-
-                // First cube (base) bases can either be 6 when i=6, 9 when i=7, or 12 when i=8
-                string baseCsvKey = csvPaths[6 + (animIndex - 6) * 3];  // Correctly indexing into the base CSV
-                List<CubeState> baseCubeStates = preprocessedData[baseCsvKey];
-
-                // Second cube (middle) can either be 7 when i=6, 10 when i=7, or 13 when i=8
-                string middleCsvKey = csvPaths[7 + (animIndex - 6) * 3];  // Correctly indexing into the middle CSV
-                List<CubeState> middleCubeStates = preprocessedData[middleCsvKey];
-
-                // Third cube (top) can either be 8 when i=6, 11 when i=7, or 14 when i=8
-                string topCsvKey = csvPaths[8 + (animIndex - 6) * 3];  // Correctly indexing into the top CSV
-                List<CubeState> topCubeStates = preprocessedData[topCsvKey];
-                trialError = CalculateTrialError(dataclassBase, baseCubeStates, dataclassMid, middleCubeStates, dataclassTop, topCubeStates);
-
-
+                Debug.Log($"Recording top cube results for trial {trialIndex} (Stacking)");
+                RecordResults(dataclassTop, cubeReseters[2].transform.position, cubeReseters[2].transform.rotation, wristPos, normedTime, trialIndex, "Stacking_Top");
             }
+        }
+    }
+    private float CalculateTrialErrorForAnimation(int animIndex)
+    {
+        float trialError = 0f;
 
+        if (animIndex >= 0 && animIndex < 6) // Lifting and Pushing animations
+        {
+            string baseCsvKey = csvPaths[animIndex];
+            List<CubeState> baseCubeStates = preprocessedData[baseCsvKey];
+            trialError = CalculateTrialError(dataclassBase, baseCubeStates);
+        }
+        else if (animIndex >= 6) // Stacking animations
+        {
+            string baseCsvKey = csvPaths[6 + (animIndex - 6) * 3];
+            string middleCsvKey = csvPaths[7 + (animIndex - 6) * 3];
+            string topCsvKey = csvPaths[8 + (animIndex - 6) * 3];
 
-            // Wait for the animation to complete
-            //compute the difference between the trajectory of the virtual cube and the physics cube
-            // Once animation is finished, calculate total error (fitness) for this trial
-            // Collect simulated data
+            List<CubeState> baseCubeStates = preprocessedData[baseCsvKey];
+            List<CubeState> middleCubeStates = preprocessedData[middleCsvKey];
+            List<CubeState> topCubeStates = preprocessedData[topCsvKey];
 
-            // Calculate error between simulation and preprocessed data
-            List<CubeState> preprocessedCubeStates = preprocessedData[csvPaths[i]];
-
-
-
-            // Callback with the trial error
-            Debug.Log("Animation Done");
-            main_anim.StopPlayback();
-            string trialType = DetermineTrialType(i);
-
-            SaveDataFile(i);  // This will save the data from base, middle, and top cubes to separate CSV files
-
-            // Optionally, add a short delay between trials
-            yield return new WaitForSeconds(1.0f);
-            Debug.Log("Trial " + i + " done");
-            onTrialComplete(trialError);
-            //wait for the physics parameters to update 
-            yield return new WaitForSeconds(3.0f);
+            trialError = CalculateTrialError(dataclassBase, baseCubeStates, dataclassMid, middleCubeStates, dataclassTop, topCubeStates);
         }
 
-        // Record data into a file (not essential)
-
-
-        Debug.Log("All trials complete");
-        yield return null;
-
+        return trialError;
     }
-    #endregion 
+
+
+    #endregion
     private float CalculateTrialError(DataClass baseTrialData, List<CubeState> baseCubeStates,
                                       DataClass middleTrialData = null, List<CubeState> middleCubeStates = null,
                                       DataClass topTrialData = null, List<CubeState> topCubeStates = null)
@@ -585,36 +701,6 @@ public class MainExperimentsetup : MonoBehaviour
         else
             return "stack";
     }
-
-    /*each animation is played once 
-     * cubes rotation and position are sampled at regular intervals 
-     * collected in a list called cube states which contains the cube's position, rotation, and the corresponding timestamp within the animation.
-     * 
-     */
-    // This method will calculate the Euclidean distance between two Vector3 positions
-
-    // Function to run hand calibration
-    IEnumerator RunHandCalibration()
-    {
-        // Start the hand calibration animation
-        main_anim.Play("Calibration hand", 0);
-
-        // Wait for 2 seconds
-        yield return new WaitForSeconds(1.0f);
-
-        // Directly trigger the calibration logic that would normally be triggered by pressing "M"
-        // Stop the calibration animation
-
-        articulationDriver_real.MeasureInitialAngles();
-
-        yield return new WaitForSeconds(1.0f);
-
-        main_anim.StopPlayback();
-
-        // Calibration logic is over
-        Debug.Log("Calibration is over");
-    }
-
     private System.Random _random = new System.Random();
     void Shuffle(int[] array)
     {
@@ -627,4 +713,82 @@ public class MainExperimentsetup : MonoBehaviour
             array[n] = t;
         }
     }
+
+    #region coroutines for animations
+
+
+    public IEnumerator PlayAnimationCoroutine(int animIndex)
+    {
+        // Play the corresponding animation
+        Debug.Log($"Playing animation: {animation_names[animIndex]}");
+        main_anim.Play(animation_names[animIndex], 0);
+
+        // Wait for the animation to finish
+        float normedTime = 0f;
+        while (normedTime < 1)
+        {
+            // Get the normalized time of the animation (0 to 1, where 1 means animation is finished)
+            normedTime = main_anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
+            yield return null; // Wait for the next frame
+        }
+
+        Debug.Log($"Animation {animation_names[animIndex]} complete.");
+    }
+
+    public IEnumerator TrialCoroutine(float[] physicsParams, Action<float> onComplete)
+    {
+        // Step 1: Apply the physics parameters for the trial
+        ApplyPhysicsParameters(physicsParams);
+
+        // Step 2: Select a randomized trial based on the shuffled array
+        int trialIndex = shuffled_anim_indices[currentTrialNumber]; // Randomized trial selection
+
+        // Step 3: Play the animation for the selected trial
+        yield return StartCoroutine(PlayAnimationCoroutine(trialIndex));
+
+        // Step 4: Calculate the error for the trial
+        float trialError = CalculateTrialErrorForAnimation(trialIndex);
+
+        // Optional: Save the data for this trial
+        SaveDataFile(trialIndex);
+
+        // Step 5: Calculate fitness based on trial error
+        float fitness = 1 / (1 + trialError); // Simple fitness calculation based on error
+
+        Debug.Log($"Trial {trialIndex} complete with fitness: {fitness}");
+
+        // Step 6: Return the fitness via the callback
+        onComplete(fitness);
+        currentTrialNumber++;
+    }
+private IEnumerator EvaluatePopulationFitness()
+    {
+        foreach (var chromosome in _population)
+        {
+            if (!chromosome.IsEvaluated)
+            {
+                // Convert genes to float[] to be used in the simulation
+                float[] physicsParams = Array.ConvertAll(chromosome.Genes, g => (float)g);
+
+                // Run a single trial for this chromosome and wait for the fitness result
+                yield return StartCoroutine(TrialCoroutine(physicsParams, (fitness) =>
+                {
+                    chromosome.Fitness = fitness; // Set fitness after the trial completes
+                    chromosome.IsEvaluated = true; // Mark the chromosome as evaluated
+
+                    // Update the best fitness if this one is better
+                    if (chromosome.Fitness > _bestFitness)
+                    {
+                        _bestFitness = chromosome.Fitness;
+                        _bestPhysicsParams = physicsParams;
+                        Debug.Log($"New best fitness: {_bestFitness} with params: {string.Join(", ", _bestPhysicsParams)}");
+                    }
+                }));
+            }
+        }
+    }
+
+    #endregion
+
+
 }
