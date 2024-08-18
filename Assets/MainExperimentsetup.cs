@@ -285,15 +285,21 @@ public class MainExperimentsetup : MonoBehaviour
         // Step 2: Set up the experiment after calibration
         Debug.Log("Setting up experiment...");
         yield return StartCoroutine(ExperimentSetupCoroutine());
+        // Step 3: Run trials and calculate scaling factors after experiment setup
+        Debug.Log("Running trials and computing scaling factors...");
+        yield return StartCoroutine(PerformTrialsAndComputeScalingFactors());
 
-        // Step 3: Initialize and start the genetic algorithm after experiment setup
-        Debug.Log("Initializing genetic algorithm...");
-        yield return StartCoroutine(InitializeGeneticAlgorithmCoroutine());
-        setupCompleted = true;
-        // Step 4: Start the genetic algorithm
-        Debug.Log("Starting genetic algorithm..." + setupCompleted);
-        _ga.Start();
-        Debug.Log("Genetic algorithm started.");
+
+        /*
+                // Step 3: Initialize and start the genetic algorithm after experiment setup
+                Debug.Log("Initializing genetic algorithm...");
+                yield return StartCoroutine(InitializeGeneticAlgorithmCoroutine());
+                setupCompleted = true;
+                // Step 4: Start the genetic algorithm
+                Debug.Log("Starting genetic algorithm..." + setupCompleted);
+                _ga.Start();
+                Debug.Log("Genetic algorithm started.");
+          */
     }
 
     // Coroutine for hand calibration
@@ -310,6 +316,14 @@ public class MainExperimentsetup : MonoBehaviour
         // Step 3: Stop the calibration animation
         main_anim.StopPlayback();
         Debug.Log("Hand calibration completed.");
+        yield return StartCoroutine(ResetPosition());
+    }
+    private IEnumerator ResetPosition()
+    {
+        main_anim.Play("Animation Clip_R_Wrist_001", 0);
+        yield return new WaitForSeconds(1.0f);  // Wait 
+        //Stop the animation
+        main_anim.StopPlayback();
     }
 
     // Coroutine to set up the experiment after calibration
@@ -570,11 +584,11 @@ public class MainExperimentsetup : MonoBehaviour
     private float GetScalingFactorForTrial(int animIndex)
     {
         if (animIndex < 3) // Lifting
-            return 0.8f;
+            return 1f;
         else if (animIndex < 6) // Pushing
-            return 1.0f;
+            return 1f;
         else // Stacking
-            return 1.2f;
+            return 1f;
     }
 
 
@@ -600,6 +614,8 @@ public class MainExperimentsetup : MonoBehaviour
             List<CubeState> topCubeStates = preprocessedData[topCsvKey];
 
             trialError = CalculateTrialError(dataclassBase, baseCubeStates, dataclassMid, middleCubeStates, dataclassTop, topCubeStates, scalingFactor); // Pass scaling factor
+            Debug.Log($"Calculated Trial Error for Animation {animation_names[animIndex]}: {trialError}");
+
         }
 
         return trialError;
@@ -703,26 +719,27 @@ public class MainExperimentsetup : MonoBehaviour
 
     public IEnumerator PlayAnimationCoroutine(int animIndex, int currentTrialNumber)
     {
+        yield return null;
         // Play the corresponding animation
-        Debug.Log($"Playing animation: {animation_names[animIndex]}");
+        //Debug.Log($"Playing animation: {animation_names[animIndex]}");
         main_anim.Play(animation_names[animIndex], 0);
 
         // Wait for the animation to finish
         float normedTime = 0f;
+        yield return null;
         while (normedTime < 1)
         {
             // Get the normalized time of the animation (0 to 1, where 1 means animation is finished)
             normedTime = main_anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
                     // Record the trial results at this frame (pass trialIndex to identify which trial it is)
             RecordTrialResults(animIndex, normedTime, currentTrialNumber);
-
             yield return null; // Wait for the next frame
         }
 
-        Debug.Log($"Animation {animation_names[animIndex]} complete.");
+        //Debug.Log($"Animation {animation_names[animIndex]} complete.");
     }
 
-    public IEnumerator TrialCoroutine(float[] physicsParams, Action<float> onComplete)
+    public IEnumerator TrialCoroutine(float[] physicsParams, Action<float> onComplete)//NO CHANGE **********************************
     {
         ResetCubes();
         // Step 1: Apply the physics parameters for the trial
@@ -759,7 +776,7 @@ public class MainExperimentsetup : MonoBehaviour
     }
     public IEnumerator SetupNext()
     {
-        yield return null;
+
         // Step 3: Reset cubes to their original positions
         ResetCubes();
 
@@ -767,13 +784,134 @@ public class MainExperimentsetup : MonoBehaviour
         baseCubeFirstTouched = false;
         middleCubeFirstTouched = false;
         topCubeFirstTouched = false;
+        yield return null;
     }
     public IEnumerator Save(int currentTrialNumber)
     {
         SaveDataFile(currentTrialNumber);
         yield return null;
     }
-        #endregion
+    #endregion
 
+    #region scaling factor per animation 
+    /*we will use default physcis parameters and calculate the average fitness for each of the animations then we will compute the scaling factors based on the average fitness per animation to account for 
+     * different difficulty of manipulation
+     */
+    private IEnumerator PerformTrialsAndComputeScalingFactors()
+    {
+        // Dictionary to store fitness results for each animation
+        Dictionary<int, List<float>> animationFitnessData = new Dictionary<int, List<float>>();
 
+        // Initialize fitness data storage for each animation
+        for (int i = 0; i < animation_names.Length; i++)
+        {
+            animationFitnessData[i] = new List<float>();
+        }
+
+        // Loop through each animation
+        for (int animIndex = 0; animIndex < animation_names.Length; animIndex++)
+        {
+            Debug.Log($"Starting trials for animation: {animation_names[animIndex]}");
+
+            // Run 30 trials for each animation
+            for (int trial = 0; trial < 30; trial++)
+            {
+                Debug.Log($"Running trial {trial} for animation {animation_names[animIndex]}");
+
+                // Ensure that the trial completes fully before starting the next one
+                yield return StartCoroutine(RunTrialForAnimation(animIndex, animationFitnessData, trial));
+                Debug.Log($"finished trial {trial} ");
+            }
+
+            // Output the average fitness for this animation
+            float averageFitness = ComputeAverageFitnessForAnimation(animIndex, animationFitnessData);
+            Debug.Log($"Average fitness for animation {animation_names[animIndex]}: {averageFitness} ");
+
+            yield return new WaitForSeconds(1.0f); // Optional delay between different animations
+        }
+
+        // After completing all trials for all animations, calculate and output scaling factors
+        CalculateAndOutputScalingFactors(animationFitnessData);
     }
+
+    private IEnumerator RunTrialForAnimation(int animIndex, Dictionary<int, List<float>> animationFitnessData, int normalizedTrialNumber)
+    {
+        Debug.Log("basecubefirst "+ baseCubeFirstTouched + "curentTrialnumbver" + currentTrialNumber);
+        // Reset cubes before the trial
+        ResetCubes();  // Setup the environment for the trial
+
+        // Step 1: Play the animation
+        Debug.Log($"Starting animation for trial {currentTrialNumber}, Animation: {animation_names[animIndex]}");
+        yield return StartCoroutine(PlayAnimationCoroutine(animIndex, currentTrialNumber));
+
+        // Add a delay to ensure that animation effects have time to settle
+        yield return new WaitForSeconds(1.0f);
+
+        // Step 2: Calculate fitness after the animation completes
+        float trialError = CalculateTrialErrorForAnimation(animIndex);
+        float fitness = 1 / (1 + trialError);
+
+        Debug.Log($"Trial {currentTrialNumber} (Normalized Trial: {normalizedTrialNumber}) completed. Trial Error: {trialError}, Fitness: {fitness}");
+
+        // Store the fitness result
+        animationFitnessData[animIndex].Add(fitness);
+
+        // Step 3: Save trial results
+
+        Debug.Log($"Trial {currentTrialNumber} complete, setting up next.");
+
+        // Add a small delay between trials to prevent overlap
+        yield return new WaitForSeconds(1.0f);
+        yield return StartCoroutine(Save(currentTrialNumber));
+        yield return StartCoroutine(SetupNext());
+        // Increment the current trial number for the next iteration
+        currentTrialNumber++;
+    }
+
+
+    private float ComputeAverageFitnessForAnimation(int animIndex, Dictionary<int, List<float>> animationFitnessData)
+    {
+        List<float> fitnessResults = animationFitnessData[animIndex];
+        float sumFitness = 0f;
+
+        foreach (float fitness in fitnessResults)
+        {
+            sumFitness += fitness;
+        }
+
+        return sumFitness / fitnessResults.Count;
+    }
+
+
+    private void CalculateAndOutputScalingFactors(Dictionary<int, List<float>> animationFitnessData)
+    {
+        // Find the maximum average fitness across all animations
+        float maxAverageFitness = float.MinValue;
+        Dictionary<int, float> scalingFactors = new Dictionary<int, float>();
+
+        for (int i = 0; i < animation_names.Length; i++)
+        {
+            float averageFitness = ComputeAverageFitnessForAnimation(i, animationFitnessData);
+            if (averageFitness > maxAverageFitness)
+            {
+                maxAverageFitness = averageFitness;
+            }
+        }
+
+        // Calculate the scaling factor for each animation relative to the maximum average fitness
+        for (int i = 0; i < animation_names.Length; i++)
+        {
+            float averageFitness = ComputeAverageFitnessForAnimation(i, animationFitnessData);
+            float scalingFactor = maxAverageFitness / averageFitness;  // Inverse proportion
+            scalingFactors[i] = scalingFactor;
+
+            Debug.Log($"Scaling Factor for animation {animation_names[i]}: {scalingFactor}");
+        }
+
+        // Optionally, store or output the scaling factors for future use
+        Debug.Log("All scaling factors calculated and outputted.");
+    }
+
+
+    #endregion
+}

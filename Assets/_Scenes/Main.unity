@@ -2991,7 +2991,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 279149595}
   serializedVersion: 4
-  m_Mass: 0.1
+  m_Mass: 0.037
   m_Drag: 0.5
   m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -11619,7 +11619,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 916794102}
   serializedVersion: 4
-  m_Mass: 0.1
+  m_Mass: 0.037
   m_Drag: 0.5
   m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -17467,7 +17467,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1412766530}
   serializedVersion: 4
-  m_Mass: 0.1
+  m_Mass: 0.037
   m_Drag: 0.5
   m_AngularDrag: 0.5
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -26101,16 +26101,16 @@ MonoBehaviour:
   xoffset: 15
   yoffset: 15
   XOffsets:
-  - -4
+  - -9.4
   - 0
   - 0
-  - -4
+  - -6.4
   - 0
   - 0
-  - 12
+  - 10
   - 0
   - 0
-  - 0
+  - -1.5
   - 0
   - 0
   - 13
@@ -26120,16 +26120,16 @@ MonoBehaviour:
   - 14
   - 0
   - 0
-  - -1
+  - 0.3
   - 0
   - 0
-  - -12
+  - -12.4
   - 0
   - 0
+  - -9.4
   - 0
   - 0
-  - 0
-  - 1
+  - -6.4
   - 0
   - 0
   ZOffsets:
@@ -26145,7 +26145,7 @@ MonoBehaviour:
   - 0
   - 0
   - 0
-  - -20
+  - -19.7
   - 0
   - 0
   angle: 0
