@@ -15,11 +15,16 @@ public class GeneticAlgorithmScript : MonoBehaviour
     private int _maxGenerationsWithoutImprovement = 10; // Max generations without improvement before stopping
 
     private List<Chromosome> _population;
+    private List<GenerationData> _generationData; // List to store generation statistics
+    private List<TrialData> _trialData; // List to store trial data
+
     private MainExperimentsetup _experimentSetup;
     private float _bestFitness = float.MinValue;
     private float[] _bestPhysicsParams;
     private int _numberOfRuns;
     private int _generationsWithoutImprovement = 0; // Track consecutive generations without improvement
+
+
 
     public GeneticAlgorithmScript(MainExperimentsetup experimentSetup, int populationSize, int numberOfGenerations, float crossoverProbability, float mutationProbability)
     {
@@ -30,6 +35,8 @@ public class GeneticAlgorithmScript : MonoBehaviour
         _mutationProbability = mutationProbability;
         PopulationSize = _populationSize;
         NumberOfGenerations = _numberOfGenerations;
+        _generationData = new List<GenerationData>();  // Initialize generation data list
+        _trialData = new List<TrialData>();            // Initialize trial data list
     }
 
     public void Start()
@@ -256,3 +263,39 @@ public class Chromosome
         return clone;
     }
 }
+public class GenerationData
+{
+    public int GenerationNumber;
+    public float BestFitness;
+    public float AverageFitness;
+    public float StdDevFitness;
+    public float WorstFitness;
+    public float[] BestParameters;
+
+    public GenerationData(int generationNumber, float bestFitness, float avgFitness, float stdDevFitness, float worstFitness, float[] bestParameters)
+    {
+        GenerationNumber = generationNumber;
+        BestFitness = bestFitness;
+        AverageFitness = avgFitness;
+        StdDevFitness = stdDevFitness;
+        WorstFitness = worstFitness;
+        BestParameters = bestParameters;
+    }
+}
+
+public class TrialData
+{
+    public int GenerationNumber;
+    public int TrialNumber;
+    public float Fitness;
+    public float[] Parameters;
+
+    public TrialData(int generationNumber, int trialNumber, float fitness, float[] parameters)
+    {
+        GenerationNumber = generationNumber;
+        TrialNumber = trialNumber;
+        Fitness = fitness;
+        Parameters = parameters;
+    }
+}
+
