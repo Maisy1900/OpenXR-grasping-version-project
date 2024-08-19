@@ -1,9 +1,9 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using System.IO;
 using System;
+using UnityEngine;
+using System.Collections;
 using System.Linq;
-
 
 public class GeneticAlgorithmScript : MonoBehaviour
 {
@@ -11,11 +11,15 @@ public class GeneticAlgorithmScript : MonoBehaviour
     private int _numberOfGenerations;
     private float _crossoverProbability;
     private float _mutationProbability;
+    private float _convergenceThreshold = 0.001f; // Minimum improvement for convergence
+    private int _maxGenerationsWithoutImprovement = 10; // Max generations without improvement before stopping
 
     private List<Chromosome> _population;
     private MainExperimentsetup _experimentSetup;
     private float _bestFitness = float.MinValue;
     private float[] _bestPhysicsParams;
+    private int _numberOfRuns;
+    private int _generationsWithoutImprovement = 0; // Track consecutive generations without improvement
 
     public GeneticAlgorithmScript(MainExperimentsetup experimentSetup, int populationSize, int numberOfGenerations, float crossoverProbability, float mutationProbability)
     {
@@ -60,22 +64,57 @@ public class GeneticAlgorithmScript : MonoBehaviour
             // Step 1: Evaluate population fitness
             yield return EvaluatePopulationFitness();
 
-            // Step 2: Selection
+            // Step 2: Check for convergence condition
+            bool converged = CheckConvergence();
+
+            if (converged)
+            {
+                Debug.Log("Convergence achieved. Stopping early.");
+                break;
+            }
+
+            // Step 3: Selection
             List<Chromosome> newPopulation = TournamentSelection();
+            yield return null; // Ensure this runs smoothly across frames
 
-            // Step 3: Crossover
+            // Step 4: Crossover
             PerformCrossover(newPopulation);
+            yield return null;
 
-            // Step 4: Mutation
+            // Step 5: Mutation
             PerformMutation(newPopulation);
+            yield return null;
 
-            // Step 5: Update population
+            // Step 6: Update population
             _population = newPopulation;
 
             Debug.Log($"Generation {generation} completed.");
+
+            yield return null; // Allow other operations in the main thread to proceed
         }
 
         Debug.Log("GA completed. Best fitness: " + _bestFitness);
+    }
+
+    private bool CheckConvergence()
+    {
+        // Check if the fitness has improved by more than the convergence threshold
+        if (_bestFitness - _population.Max(c => c.Fitness) < _convergenceThreshold)
+        {
+            _generationsWithoutImprovement++;
+
+            if (_generationsWithoutImprovement >= _maxGenerationsWithoutImprovement)
+            {
+                return true; // Converged
+            }
+        }
+        else
+        {
+            // Reset if there was a significant improvement
+            _generationsWithoutImprovement = 0;
+        }
+
+        return false;
     }
 
     private IEnumerator EvaluatePopulationFitness()
@@ -84,23 +123,27 @@ public class GeneticAlgorithmScript : MonoBehaviour
         {
             if (!chromosome.IsEvaluated)
             {
+                yield return null; // Ensure coroutine doesn't block
+
                 // Convert genes to float[] to be used in the simulation
                 float[] physicsParams = chromosome.Genes.Select(g => (float)g).ToArray();
-                
+
                 // Run the simulation for this chromosome and wait for the fitness result
                 yield return _experimentSetup.StartCoroutine(_experimentSetup.TrialCoroutine(physicsParams, (fitness) =>
-                               {
-                                   chromosome.Fitness = fitness; // Fitness based on the trial result
-                                   chromosome.IsEvaluated = true;
+                {
+                    chromosome.Fitness = fitness; // Fitness based on the trial result
+                    chromosome.IsEvaluated = true;
 
-                                   // Update the best fitness if this one is better
-                                   if (chromosome.Fitness > _bestFitness)
-                                   {
-                                       _bestFitness = chromosome.Fitness;
-                                       _bestPhysicsParams = physicsParams;
-                                       Debug.Log($"New best fitness: {_bestFitness} with params: {string.Join(", ", _bestPhysicsParams)}");
-                                   }
-                               }));
+                    // Update the best fitness if this one is better
+                    if (chromosome.Fitness > _bestFitness)
+                    {
+                        _bestFitness = chromosome.Fitness;
+                        _bestPhysicsParams = physicsParams;
+                        Debug.Log($"New best fitness: {_bestFitness} with params: {string.Join(", ", _bestPhysicsParams)}");
+                    }
+                }));
+
+                yield return null; // Ensure coroutine doesn't block
             }
         }
     }
@@ -178,6 +221,7 @@ public class GeneticAlgorithmScript : MonoBehaviour
     public int NumberOfGenerations { get; private set; }
 
 }
+
 public class Chromosome
 {
     public double[] Genes { get; private set; }
