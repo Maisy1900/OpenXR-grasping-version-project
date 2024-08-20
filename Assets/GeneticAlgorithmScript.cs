@@ -17,6 +17,8 @@ public class GeneticAlgorithmScript : MonoBehaviour
     private List<Chromosome> _population;
     private List<GenerationData> _generationData; // List to store generation statistics
     private List<TrialData> _trialData; // List to store trial data
+    private int _currentGeneration;
+    private int _trialNumber;
 
     private MainExperimentsetup _experimentSetup;
     private float _bestFitness = float.MinValue;
@@ -24,7 +26,8 @@ public class GeneticAlgorithmScript : MonoBehaviour
     private int _numberOfRuns;
     private int _generationsWithoutImprovement = 0; // Track consecutive generations without improvement
 
-
+    public int NumTrials { get; set; } = 5; // Default to 5 trials, can be set externally
+    public int CurrentTrialNumber { get; private set; }
 
     public GeneticAlgorithmScript(MainExperimentsetup experimentSetup, int populationSize, int numberOfGenerations, float crossoverProbability, float mutationProbability)
     {
@@ -37,15 +40,17 @@ public class GeneticAlgorithmScript : MonoBehaviour
         NumberOfGenerations = _numberOfGenerations;
         _generationData = new List<GenerationData>();  // Initialize generation data list
         _trialData = new List<TrialData>();            // Initialize trial data list
+        CurrentTrialNumber = 0;
     }
-
+    #region ga setup logic 
     public void Start()
     {
-        // Initialize population
-        InitializePopulation();
-
-        // Run the genetic algorithm loop
-        _experimentSetup.StartCoroutine(RunGA());
+        // Run multiple trials
+       // StartCoroutine(RunMultipleTrials(NumTrials)); // Running for 5 trials including 0
+    }
+    public void StartGA()
+    {
+        StartCoroutine(RunMultipleTrials(NumTrials)); // Ensures this runs as a Coroutine from this MonoBehaviour
     }
 
     private void InitializePopulation()
@@ -61,12 +66,65 @@ public class GeneticAlgorithmScript : MonoBehaviour
             _population.Add(chromosome);
         }
     }
+    public IEnumerator RunMultipleTrials(int numTrials)
+    {
+        for (int trial = 0; trial < numTrials; trial++)
+        {
+            Debug.Log($"Starting Trial {trial}...");
+            CurrentTrialNumber = trial;
+
+            // Set a new random seed for each trial (using trial number as seed)
+            UnityEngine.Random.InitState(trial);
+            Debug.Log($"Random seed for Trial {trial}: {trial}");
+
+            _trialNumber = trial;
+
+            // Reset all relevant data for each trial
+            ResetTrialData();
+            yield return null;
+            // Initialize population for each trial
+            Debug.Log("Initializing population for this trial...");
+            InitializePopulation();
+            Debug.Log($"Population initialized for Trial {trial}.");
+
+            // Run the genetic algorithm for the current trial
+            yield return RunGA();  // Removed the StartCoroutine call here
+            yield return null;
+            // Save trial and generation data for this trial
+            Debug.Log($"Saving trial data for Trial {trial}...");
+            SaveTrialDataToCSV(_trialNumber);
+            yield return null;
+            SaveGenerationDataToCSV(_trialNumber);
+            yield return null;
+            Debug.Log($"Trial {trial} completed and data saved.");
+        }
+
+        Debug.Log("All trials completed.");
+    }
+
+    private void ResetTrialData()
+    {
+        // Reset the best fitness and parameters for this trial
+        _bestFitness = float.MinValue;
+        _bestPhysicsParams = null;
+
+        // Clear previous generation and trial data
+        _generationData.Clear();
+        _trialData.Clear();
+
+        // Reset generation and trial counters if necessary
+        _currentGeneration = 0;
+
+        Debug.Log("Trial data, best fitness, and parameters reset.");
+    }
 
     private IEnumerator RunGA()
     {
         for (int generation = 0; generation < _numberOfGenerations; generation++)
         {
             Debug.Log($"Generation {generation} starting...");
+
+            _currentGeneration = generation;  // Set the current generation
 
             // Step 1: Evaluate population fitness
             yield return EvaluatePopulationFitness();
@@ -94,14 +152,32 @@ public class GeneticAlgorithmScript : MonoBehaviour
 
             // Step 6: Update population
             _population = newPopulation;
+            yield return null;
+
+            // Step 7: Save generation statistics and trial data
+           // CalculateAndStoreGenerationStatistics(generation);
+
+            yield return null;
+            SaveGenerationDataToCSV(_trialNumber);  // Pass the trial number
+
+            yield return null;
 
             Debug.Log($"Generation {generation} completed.");
 
             yield return null; // Allow other operations in the main thread to proceed
+                               // Example: After evaluating fitness in EvaluatePopulationFitness
+            foreach (var chromosome in _population)
+            {
+                PrintChromosome(chromosome);
+            }
+            yield return null;
         }
 
         Debug.Log("GA completed. Best fitness: " + _bestFitness);
+        SaveTrialDataToCSV(_trialNumber); // Save the trial data
+        yield return null;
     }
+
 
     private bool CheckConvergence()
     {
@@ -126,34 +202,47 @@ public class GeneticAlgorithmScript : MonoBehaviour
 
     private IEnumerator EvaluatePopulationFitness()
     {
+        int trialNumber = 1;
+
         foreach (var chromosome in _population)
         {
             if (!chromosome.IsEvaluated)
             {
-                yield return null; // Ensure coroutine doesn't block
+                yield return null; // Prevent blocking
 
-                // Convert genes to float[] to be used in the simulation
                 float[] physicsParams = chromosome.Genes.Select(g => (float)g).ToArray();
 
-                // Run the simulation for this chromosome and wait for the fitness result
+                // Ensure you wait for the coroutine to fully complete
+                bool evaluationCompleted = false;
                 yield return _experimentSetup.StartCoroutine(_experimentSetup.TrialCoroutine(physicsParams, (fitness) =>
                 {
-                    chromosome.Fitness = fitness; // Fitness based on the trial result
+                    chromosome.Fitness = fitness;
                     chromosome.IsEvaluated = true;
+                    _trialData.Add(new TrialData(_currentGeneration, trialNumber, fitness, physicsParams));
 
-                    // Update the best fitness if this one is better
                     if (chromosome.Fitness > _bestFitness)
                     {
                         _bestFitness = chromosome.Fitness;
                         _bestPhysicsParams = physicsParams;
-                        Debug.Log($"New best fitness: {_bestFitness} with params: {string.Join(", ", _bestPhysicsParams)}");
                     }
+                    evaluationCompleted = true;
                 }));
 
-                yield return null; // Ensure coroutine doesn't block
+                // Wait until the fitness evaluation is completed
+                while (!evaluationCompleted)
+                {
+                    yield return null;
+                }
+
+                trialNumber++;
+                yield return null; // Prevent blocking further
             }
         }
     }
+
+    #endregion
+
+    #region selection mutation crossover 
 
     private List<Chromosome> TournamentSelection()
     {
@@ -213,6 +302,12 @@ public class GeneticAlgorithmScript : MonoBehaviour
 
     private void PerformMutation(List<Chromosome> population)
     {
+        Debug.Log("Before mutation:");
+        foreach (var chromosome in population)
+        {
+            Debug.Log($"Chromosome Genes: [{string.Join(", ", chromosome.Genes.Select(g => g.ToString("F4")))}]");
+        }
+
         foreach (var chromosome in population)
         {
             for (int i = 0; i < chromosome.Genes.Length; i++)
@@ -223,12 +318,96 @@ public class GeneticAlgorithmScript : MonoBehaviour
                 }
             }
         }
+
+        Debug.Log("After mutation:");
+        foreach (var chromosome in population)
+        {
+            Debug.Log($"Chromosome Genes: [{string.Join(", ", chromosome.Genes.Select(g => g.ToString("F4")))}]");
+        }
     }
+
+    #endregion
+
+    /*Generation statistics
+     * go through the chromosomes for the population, for that generation 
+     * 
+     */
+
+
+    private void SaveGenerationDataToCSV(int trialNumber)
+    {
+        // Use _currentGeneration directly
+        string directoryPath = Path.Combine(Application.dataPath, "SimulationResults", $"Trial{trialNumber}", $"Generation{_currentGeneration}");
+
+        // Check if the directory exists, if not, create it
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
+
+        // Define the file name and path
+        string filePath = Path.Combine(directoryPath, "GenerationStats.csv");
+
+        using (StreamWriter writer = new StreamWriter(filePath))
+        {
+            writer.WriteLine("Generation,BestFitness,AverageFitness,StdDevFitness,WorstFitness,BestParameters");
+
+            foreach (var data in _generationData)
+            {
+                string paramString = string.Join(",", data.BestParameters);
+                writer.WriteLine($"{data.GenerationNumber},{data.BestFitness},{data.AverageFitness},{data.StdDevFitness},{data.WorstFitness},{paramString}");
+            }
+        }
+
+        Debug.Log("Generation data saved to " + filePath);
+    }
+
+
+    public int CurrentGeneration => _currentGeneration;
+
+
+    private void SaveTrialDataToCSV(int trialNumber)//all the trial data and parameters for each generation 
+    {
+        // Construct the directory path for this trial
+        string directoryPath = Path.Combine(Application.dataPath, "SimulationResults", $"Trial{trialNumber}");
+
+        // Check if the directory exists, if not, create it
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
+
+        // Define the file name and path
+        string filePath = Path.Combine(directoryPath, "TrialStats.csv");
+
+        using (StreamWriter writer = new StreamWriter(filePath))
+        {
+            writer.WriteLine("Generation,Trial,Fitness,Parameters");
+
+            foreach (var data in _trialData)
+            {
+                string paramString = string.Join(",", data.Parameters);
+                writer.WriteLine($"{data.GenerationNumber},{data.TrialNumber},{data.Fitness},{paramString}");
+            }
+        }
+
+        Debug.Log("Trial data saved to " + filePath);
+    }
+
+
     public int PopulationSize { get; private set; }
     public int NumberOfGenerations { get; private set; }
+    public void PrintChromosome(Chromosome chromosome)
+    {
+        // Convert the genes array to a string for printing
+        string genesString = string.Join(", ", chromosome.Genes.Select(g => g.ToString()).ToArray());
+
+        // Print the chromosome details
+        Debug.Log($"Chromosome | Genes: [{genesString}] | Fitness: {chromosome.Fitness}");
+    }
 
 }
-
+#region chromosome 
 public class Chromosome
 {
     public double[] Genes { get; private set; }
@@ -263,6 +442,8 @@ public class Chromosome
         return clone;
     }
 }
+#endregion
+#region data 
 public class GenerationData
 {
     public int GenerationNumber;
@@ -298,4 +479,5 @@ public class TrialData
         Parameters = parameters;
     }
 }
+#endregion 
 

@@ -43,22 +43,26 @@ class DataClass
         timestamps.Clear(); // Clear timestamp list
     }
 
-    public void SaveToCSV(string fileName)
+    public void SaveToCSV(string fileName, int physicsTrialNumber, int gaTrialNumber, int generationNumber)
     {
-        string directoryPath = Path.Combine(Application.dataPath, "SimulationResults");
+        // Construct the directory path for the current physics trial, GA trial, and generation
+        string directoryPath = Path.Combine(Application.dataPath, "SimulationResults", $"Trial{gaTrialNumber}", $"Generation{generationNumber}");
 
-        // Check if directory exists, if not, create it
+        // Check if the directory exists, if not, create it
         if (!Directory.Exists(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
         }
 
+        // Construct the complete path for the file
         string path = Path.Combine(directoryPath, fileName + ".csv");
 
         using (StreamWriter writer = new StreamWriter(path))
         {
+            // Write the header
             writer.WriteLine("CubePosX,CubePosY,CubePosZ,CubeRotX,CubeRotY,CubeRotZ,HandPosX,HandPosY,HandPosZ,Time,TrialCondition,TrialNumber,FPS,Timestamp");
 
+            // Write the data for each recorded point
             for (int i = 0; i < cubePos.Count; i++)
             {
                 writer.WriteLine($"{cubePos[i].x},{cubePos[i].y},{cubePos[i].z}," +
@@ -70,6 +74,9 @@ class DataClass
 
         Debug.Log("Data saved to " + path);
     }
+
+
+
 }
 
 public class MainExperimentsetup : MonoBehaviour
@@ -93,8 +100,13 @@ public class MainExperimentsetup : MonoBehaviour
     public Animator main_anim;
     public string[] animation_names = new string[] { "lift_1", "lift_2", "lift_3", "push_1", "push_2", "push_3", "stack_1", "stack_2", "stack_3" };
     private int[] shuffled_anim_indices;
-    public int currentTrialNumber = 0; // Store the current trial number
+    public int currentTrialNumber = 0; // temp trial number
     private GeneticAlgorithmScript _geneticAlgorithmManager;
+
+    private int _currentGATrialNumber = 0;  // Start from trial 0 update 
+    
+
+
 
     public ResetPosition[] cubeReseters;
 
@@ -236,35 +248,35 @@ public class MainExperimentsetup : MonoBehaviour
         preprocessedData[csvPath] = cubeStates;
     }
 
-    void SaveDataFile(int trialNumber)
+    public void SaveDataFile(int physicsTrialNumber, int gaTrialNumber, int generationNumber)
     {
-        Debug.Log($"Saving data for trial {trialNumber}");
+        Debug.Log($"Saving data for physics trial {physicsTrialNumber}, GA trial {gaTrialNumber}, generation {generationNumber}");
 
         if (dataclassBase.cubePos.Count > 0)
         {
-            dataclassBase.SaveToCSV($"BaseCube_Trial_{trialNumber}");
-            Debug.Log($"BaseCube data saved for trial {trialNumber}");
+            dataclassBase.SaveToCSV($"BaseCube_PhysicsTrial_{physicsTrialNumber}_GATrial_{gaTrialNumber}_Generation_{generationNumber}", physicsTrialNumber, gaTrialNumber, generationNumber);
+            Debug.Log($"BaseCube data saved for physics trial {physicsTrialNumber}, GA trial {gaTrialNumber}, generation {generationNumber}");
             dataclassBase.ClearAllLists();
         }
 
         if (dataclassMid.cubePos.Count > 0)
         {
-            dataclassMid.SaveToCSV($"MiddleCube_Trial_{trialNumber}");
-            Debug.Log($"MiddleCube data saved for trial {trialNumber}");
+            dataclassMid.SaveToCSV($"MiddleCube_PhysicsTrial_{physicsTrialNumber}_GATrial_{gaTrialNumber}_Generation_{generationNumber}", physicsTrialNumber, gaTrialNumber, generationNumber);
+            Debug.Log($"MiddleCube data saved for physics trial {physicsTrialNumber}, GA trial {gaTrialNumber}, generation {generationNumber}");
             dataclassMid.ClearAllLists();
         }
 
         if (dataclassTop.cubePos.Count > 0)
         {
-            dataclassTop.SaveToCSV($"TopCube_Trial_{trialNumber}");
-            Debug.Log($"TopCube data saved for trial {trialNumber}");
+            dataclassTop.SaveToCSV($"TopCube_PhysicsTrial_{physicsTrialNumber}_GATrial_{gaTrialNumber}_Generation_{generationNumber}", physicsTrialNumber, gaTrialNumber, generationNumber);
+            Debug.Log($"TopCube data saved for physics trial {physicsTrialNumber}, GA trial {gaTrialNumber}, generation {generationNumber}");
             dataclassTop.ClearAllLists();
         }
-        else
-        {
-            Debug.Log($"Error saving data for trial {trialNumber}");
-        }
     }
+
+
+
+
     #endregion
     void Start()
     {
@@ -272,6 +284,7 @@ public class MainExperimentsetup : MonoBehaviour
         // Start hand calibration; the rest of the experiment will follow after calibration is complete
         StartCoroutine(SetupExperimentCoroutine());
     }
+
     #region start coroutine 
     private bool setupCompleted = false;
     // Main setup coroutine that runs the whole process in sequence
@@ -296,10 +309,8 @@ public class MainExperimentsetup : MonoBehaviour
         Debug.Log("Initializing genetic algorithm...");
         yield return StartCoroutine(InitializeGeneticAlgorithmCoroutine());
         setupCompleted = true;
-        // Step 4: Start the genetic algorithm
-        Debug.Log("Starting genetic algorithm..." + setupCompleted);
-        _ga.Start();
-        Debug.Log("Genetic algorithm started.");
+        yield return StartCoroutine(_ga.RunMultipleTrials(_ga.NumTrials)); // Run trials from MainExperimentsetup
+        Debug.Log("Genetic algorithm completed.");
 
     }
 
@@ -353,7 +364,7 @@ public class MainExperimentsetup : MonoBehaviour
     private IEnumerator InitializeGeneticAlgorithmCoroutine()
     {
         // Step 1: Initialize the genetic algorithm
-        _ga = new GeneticAlgorithmScript(this, populationSize: 10, numberOfGenerations: 5, crossoverProbability: 0.8f, mutationProbability: 0.05f);
+        _ga = new GeneticAlgorithmScript(this, populationSize: 20, numberOfGenerations: 30, crossoverProbability: 0.8f, mutationProbability: 0.50f);
         //_ga = new GeneticAlgorithmScript(this, populationSize: 10, numberOfGenerations: 50, crossoverProbability: 0.8f, mutationProbability: 0.05f);
 
         // Step 2: Calculate total number of simulations and shuffle animations
@@ -464,8 +475,6 @@ public class MainExperimentsetup : MonoBehaviour
         }
     }
 
-
-
     private float CalculateTrialErrorForAnimation(int animIndex)
     {
         float trialError = 0f;
@@ -561,37 +570,17 @@ public class MainExperimentsetup : MonoBehaviour
             return float.MaxValue;  // Return a high error to indicate failure due to no data
         }
 
-        // Apply the scaling factor to the total errors
-
-        Debug.Log("Scaling Factor for  factor" + scalingFactor);
 
         // Calculate average error per cube to normalize the fitness
         float averagePositionError = totalPositionError / numCubes;
         float averageRotationError = totalRotationError / numCubes;
 
         float totalError = averagePositionError + averageRotationError;
-        Debug.Log("Before scaling: Total Error = " + totalError);
         totalError *= scalingFactor;
-        Debug.Log("After scaling: Total Error = " + totalError);
-
         return totalError; // Return normalized error
     }
 
-
-    private string DetermineTrialType(int trialIndex)
-    {
-        if (trialIndex < 3)
-            return "lift";
-        else if (trialIndex < 6)
-            return "push";
-        else
-            return "stack";
-    }
-
-
     #endregion
-
-
 
     #region coroutines for animations
 
@@ -621,66 +610,10 @@ public class MainExperimentsetup : MonoBehaviour
 
         //Debug.Log($"Animation {animation_names[animIndex]} complete.");
     }
-    /*
+
     public IEnumerator TrialCoroutine(float[] physicsParams, Action<float> onComplete)
     {
-        ResetCubes();
-        // Step 1: Apply the physics parameters for the trial
-        ApplyPhysicsParameters(physicsParams);
-
-        // Print the physics parameters
-        Debug.Log($"Physics parameters: {string.Join(", ", physicsParams)}");
-
-        Debug.Log("current trial number: " + currentTrialNumber);
-
-        // Step 2: Select a randomized trial based on the shuffled array
-        int trialIndex = shuffled_anim_indices[currentTrialNumber]; // Randomized trial selection
-        Debug.Log("anim index: " + trialIndex);
-
-        // Step 3: Play the animation for the selected trial
-        yield return StartCoroutine(PlayAnimationCoroutine(trialIndex, currentTrialNumber));
-        yield return new WaitForSeconds(1.0f);
-
-        // Declare trialError outside of the if-else block
-        float trialError = 0f; // Initialize it with a default value
-
-        // Check FPS and calculate fitness accordingly
-        bool isFpsAbove90 = CalculateFpsStatistics(dataclassBase);
-        yield return null;
-        float fitness;
-
-        if (isFpsAbove90)
-        {
-            // Assign maximum fitness (1.0) if FPS is above 90
-            fitness = 1.0f;
-            Debug.Log("FPS is above 90. Assigning max fitness of 1.0.");
-            yield return null;
-        }
-        else
-        {
-            // Calculate fitness based on error if FPS is below 90
-            trialError = CalculateTrialErrorForAnimation(trialIndex);
-            fitness = 1 / (1 + trialError); // Inverse error-based fitness calculation
-            Debug.Log($"Trial {currentTrialNumber} complete with fitness: {fitness} and trial error: {trialError}");
-            yield return null;
-        }
-
-        // Log the final fitness and trialError (trialError is now always available)
-        Debug.Log($"Trial {currentTrialNumber} complete with fitness: {fitness} and trial error: {trialError}");
-
-        // Step 6: Return the fitness via the callback
-        onComplete(fitness);
-
-        // Save the data for the current trial (which already clears the lists)
-        yield return StartCoroutine(Save(currentTrialNumber));
-        yield return StartCoroutine(SetupNext());
-
-        // Increment the current trial number for the next iteration
-        currentTrialNumber++;
-    }
-    */
-    public IEnumerator TrialCoroutine(float[] physicsParams, Action<float> onComplete)
-    {
+        Debug.Log("WE ARE NOW MOVING ONTO trialNum : " + _ga.CurrentTrialNumber);
         // Ensure dataclassBase is initialized
         if (dataclassBase == null)
         {
@@ -714,14 +647,22 @@ public class MainExperimentsetup : MonoBehaviour
 
         // Step 5: Return the fitness via the callback
         onComplete(fitness);
-
+        Debug.Log("NUMBER OF SIMS " + number_of_simulations + "current TRIAL " + currentTrialNumber);
         // Step 6: Save the data for the current trial (which already clears the lists)
-        yield return StartCoroutine(Save(currentTrialNumber));
-        yield return StartCoroutine(SetupNext());
-
-        // Increment the current trial number for the next iteration
-        currentTrialNumber++;
+        yield return StartCoroutine(Save(currentTrialNumber, _ga.CurrentGeneration));
+        // Step 7: Check if currentTrialNumber exceeds number_of_simulations
+        if (currentTrialNumber +1 >= number_of_simulations)//+1 bc currenttrial goes from 0 
+        {
+            Debug.Log("currentTrialNumber exceeded number_of_simulations, resetting to 0.");
+            currentTrialNumber = 0; // Reset to 0 if it exceeds the limit
+        }
+        else
+        {
+            // Increment the current trial number for the next iteration
+            currentTrialNumber++;
+        }
     }
+
     private bool CalculateFpsStatistics(DataClass dataClass)
     {
         // Check if there are any FPS values recorded
@@ -793,11 +734,13 @@ public class MainExperimentsetup : MonoBehaviour
         topCubeFirstTouched = false;
         yield return null;
     }
-    public IEnumerator Save(int currentTrialNumber)
+    public IEnumerator Save(int trialNumber, int generationNumber)
     {
-        SaveDataFile(currentTrialNumber);
+        Debug.Log("trialNum : " + _ga.CurrentTrialNumber);
+        SaveDataFile(trialNumber, _ga.CurrentTrialNumber, generationNumber);
         yield return null;
     }
+
     #endregion
 
     #region scaling factor per animation RecordResults
@@ -869,7 +812,7 @@ public class MainExperimentsetup : MonoBehaviour
 
         // Add a small delay between trials to prevent overlap
         yield return new WaitForSeconds(1.0f);
-        yield return StartCoroutine(Save(currentTrialNumber));
+        yield return StartCoroutine(Save(currentTrialNumber, _ga.CurrentGeneration));
         yield return StartCoroutine(SetupNext());
         // Increment the current trial number for the next iteration
         currentTrialNumber++;
