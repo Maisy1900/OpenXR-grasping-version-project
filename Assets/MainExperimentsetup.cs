@@ -104,9 +104,6 @@ public class MainExperimentsetup : MonoBehaviour
     private GeneticAlgorithmScript _geneticAlgorithmManager;
 
     private int _currentGATrialNumber = 0;  // Start from trial 0 update 
-    
-
-
 
     public ResetPosition[] cubeReseters;
 
@@ -364,7 +361,7 @@ public class MainExperimentsetup : MonoBehaviour
     private IEnumerator InitializeGeneticAlgorithmCoroutine()
     {
         // Step 1: Initialize the genetic algorithm
-        _ga = new GeneticAlgorithmScript(this, populationSize: 20, numberOfGenerations: 30, crossoverProbability: 0.8f, mutationProbability: 0.50f);
+        _ga = new GeneticAlgorithmScript(this, populationSize: 1, numberOfGenerations: 30, crossoverProbability: 0.9f, mutationProbability: 0.05f);
         //_ga = new GeneticAlgorithmScript(this, populationSize: 10, numberOfGenerations: 50, crossoverProbability: 0.8f, mutationProbability: 0.05f);
 
         // Step 2: Calculate total number of simulations and shuffle animations

@@ -26,7 +26,7 @@ public class GeneticAlgorithmScript : MonoBehaviour
     private int _numberOfRuns;
     private int _generationsWithoutImprovement = 0; // Track consecutive generations without improvement
 
-    public int NumTrials { get; set; } = 5; // Default to 5 trials, can be set externally
+    public int NumTrials { get; set; } = 4; // Default to 5 trials, can be set externally
     public int CurrentTrialNumber { get; private set; }
 
     public GeneticAlgorithmScript(MainExperimentsetup experimentSetup, int populationSize, int numberOfGenerations, float crossoverProbability, float mutationProbability)
@@ -73,50 +73,36 @@ public class GeneticAlgorithmScript : MonoBehaviour
             Debug.Log($"Starting Trial {trial}...");
             CurrentTrialNumber = trial;
 
-            // Set a new random seed for each trial (using trial number as seed)
+            // Set a new random seed for each trial
             UnityEngine.Random.InitState(trial);
             Debug.Log($"Random seed for Trial {trial}: {trial}");
 
-            _trialNumber = trial;
-
             // Reset all relevant data for each trial
-            ResetTrialData();
+            ResetTrialData();  // Reset trial-specific variables
             yield return null;
-            // Initialize population for each trial
+
+            // Initialize a new population for this trial
             Debug.Log("Initializing population for this trial...");
-            InitializePopulation();
+            InitializePopulation();  // Reinitialize the population
             Debug.Log($"Population initialized for Trial {trial}.");
 
             // Run the genetic algorithm for the current trial
-            yield return RunGA();  // Removed the StartCoroutine call here
+            yield return RunGA();  // Removed StartCoroutine here
             yield return null;
+
             // Save trial and generation data for this trial
             Debug.Log($"Saving trial data for Trial {trial}...");
             SaveTrialDataToCSV(_trialNumber);
             yield return null;
             SaveGenerationDataToCSV(_trialNumber);
             yield return null;
+
             Debug.Log($"Trial {trial} completed and data saved.");
         }
 
         Debug.Log("All trials completed.");
     }
 
-    private void ResetTrialData()
-    {
-        // Reset the best fitness and parameters for this trial
-        _bestFitness = float.MinValue;
-        _bestPhysicsParams = null;
-
-        // Clear previous generation and trial data
-        _generationData.Clear();
-        _trialData.Clear();
-
-        // Reset generation and trial counters if necessary
-        _currentGeneration = 0;
-
-        Debug.Log("Trial data, best fitness, and parameters reset.");
-    }
 
     private IEnumerator RunGA()
     {
@@ -129,14 +115,7 @@ public class GeneticAlgorithmScript : MonoBehaviour
             // Step 1: Evaluate population fitness
             yield return EvaluatePopulationFitness();
 
-            // Step 2: Check for convergence condition
-            bool converged = CheckConvergence();
-
-            if (converged)
-            {
-                Debug.Log("Convergence achieved. Stopping early.");
-                break;
-            }
+            
 
             // Step 3: Selection
             List<Chromosome> newPopulation = TournamentSelection();
@@ -181,21 +160,32 @@ public class GeneticAlgorithmScript : MonoBehaviour
 
     private bool CheckConvergence()
     {
-        // Check if the fitness has improved by more than the convergence threshold
-        if (_bestFitness - _population.Max(c => c.Fitness) < _convergenceThreshold)
+        // Ensure the algorithm runs for at least a minimum number of generations
+        if (_currentGeneration < 10)  // Adjust as necessary
+        {
+            Debug.Log($"Generation {_currentGeneration}: Best fitness so far is {_bestFitness}. Not checking for convergence yet.");
+            return false;
+        }
+
+        // Existing convergence logic
+        float currentBestFitness = _population.Max(c => c.Fitness);
+        if (_bestFitness - currentBestFitness < _convergenceThreshold)
         {
             _generationsWithoutImprovement++;
 
             if (_generationsWithoutImprovement >= _maxGenerationsWithoutImprovement)
             {
+                Debug.Log("Convergence achieved. Stopping early.");
                 return true; // Converged
             }
         }
         else
         {
-            // Reset if there was a significant improvement
             _generationsWithoutImprovement = 0;
         }
+
+        // Print statement if not converging yet
+        Debug.Log($"Generation {_currentGeneration}: Best fitness so far is {_bestFitness}. Not converging yet.");
 
         return false;
     }
@@ -365,6 +355,22 @@ public class GeneticAlgorithmScript : MonoBehaviour
 
     public int CurrentGeneration => _currentGeneration;
 
+    private void ResetTrialData()
+    {
+        // Reset the best fitness and parameters for this trial
+        _bestFitness = float.MinValue;  // Reset best fitness for new trial
+        _bestPhysicsParams = null;      // Reset best parameters
+
+        // Clear previous generation and trial data
+        _generationData.Clear();  // Clear generation statistics
+        _trialData.Clear();       // Clear trial statistics
+
+        // Reset generation and trial counters
+        _currentGeneration = 0;   // Reset current generation counter
+        _generationsWithoutImprovement = 0;  // Reset the no improvement counter
+
+        Debug.Log("Trial data, best fitness, and parameters reset.");
+    }
 
     private void SaveTrialDataToCSV(int trialNumber)//all the trial data and parameters for each generation 
     {
