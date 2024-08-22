@@ -74,7 +74,33 @@ class DataClass
 
         Debug.Log("Data saved to " + path);
     }
+        public void Scaling_SaveToCSV(string fileName)
+    {
+        string directoryPath = Path.Combine(Application.dataPath, "SimulationResults");
 
+        // Check if directory exists, if not, create it
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
+
+        string path = Path.Combine(directoryPath, fileName + "_scaling.csv");
+
+        using (StreamWriter writer = new StreamWriter(path))
+        {
+            writer.WriteLine("CubePosX,CubePosY,CubePosZ,CubeRotX,CubeRotY,CubeRotZ,HandPosX,HandPosY,HandPosZ,Time,TrialCondition,TrialNumber,FPS,Timestamp");
+
+            for (int i = 0; i < cubePos.Count; i++)
+            {
+                writer.WriteLine($"{cubePos[i].x},{cubePos[i].y},{cubePos[i].z}," +
+                                 $"{cubeRot[i].x},{cubeRot[i].y},{cubeRot[i].z}," +
+                                 $"{wristPos[i].x},{wristPos[i].y},{wristPos[i].z}," +
+                                 $"{time[i]},{trial_condition[i]},{trial_number[i]},{fps[i]},{timestamps[i]}");
+            }
+        }
+
+        Debug.Log("Scaling data saved to " + path);
+    }
 
 
 }
@@ -86,9 +112,8 @@ public class MainExperimentsetup : MonoBehaviour
     DataClass dataclassBase;
     DataClass dataclassMid;
     DataClass dataclassTop;
-    public int number_of_simulation_blocks = 5; // Number of full sets of 9 trials
     private int number_of_simulations;
-    public GameObject articulationPrefab; 
+    public GameObject articulationPrefab;
     public GameObject articulationObject;
     public ArticulationDriver_Real articulationDriver_real;
     public Transform cubeObj;
@@ -99,7 +124,7 @@ public class MainExperimentsetup : MonoBehaviour
 
 
     public Animator main_anim;
-    public string[] animation_names = new string[] { "lift_1", "lift_2", "lift_3", "push_1", "push_2", "push_3", "stack_1", "stack_2", "stack_3" };
+    public string[] animation_names = new string[] { "lift_1", "lift_2", "lift_3", "stack_1", "stack_2", "stack_3" };
     private int[] shuffled_anim_indices;
     public int currentTrialNumber = 0; // temp trial number
     private GeneticAlgorithmScript _geneticAlgorithmManager;
@@ -245,7 +270,36 @@ public class MainExperimentsetup : MonoBehaviour
         // Store or process the preprocessed cube states as needed
         preprocessedData[csvPath] = cubeStates;
     }
+    // Renamed SaveDataFile for scaling
+    public void Scaling_SaveDataFile(int trialNumber)
+    {
+        Debug.Log($"Saving scaling data for trial {trialNumber}");
 
+        if (dataclassBase.cubePos.Count > 0)
+        {
+            dataclassBase.Scaling_SaveToCSV($"BaseCube_Trial_{trialNumber}");
+            Debug.Log($"BaseCube scaling data saved for trial {trialNumber}");
+            dataclassBase.ClearAllLists();
+        }
+
+        if (dataclassMid.cubePos.Count > 0)
+        {
+            dataclassMid.Scaling_SaveToCSV($"MiddleCube_Trial_{trialNumber}");
+            Debug.Log($"MiddleCube scaling data saved for trial {trialNumber}");
+            dataclassMid.ClearAllLists();
+        }
+
+        if (dataclassTop.cubePos.Count > 0)
+        {
+            dataclassTop.Scaling_SaveToCSV($"TopCube_Trial_{trialNumber}");
+            Debug.Log($"TopCube scaling data saved for trial {trialNumber}");
+            dataclassTop.ClearAllLists();
+        }
+        else
+        {
+            Debug.Log($"Error saving scaling data for trial {trialNumber}");
+        }
+    }
     public void SaveDataFile(int physicsTrialNumber, int gaTrialNumber, int generationNumber)
     {
         Debug.Log($"Saving data for physics trial {physicsTrialNumber}, GA trial {gaTrialNumber}, generation {generationNumber}");
@@ -272,23 +326,20 @@ public class MainExperimentsetup : MonoBehaviour
         }
     }
 
-
-
-
     #endregion
     void Start()
     {
         if (articulationPrefab == null)
         {
-        Debug.LogError("Articulation Prefab is still null at Start.");
+            Debug.LogError("Articulation Prefab is still null at Start.");
         }
         else
         {
-        Debug.Log("Articulation Prefab is correctly assigned at Start.");
+            Debug.Log("Articulation Prefab is correctly assigned at Start.");
         }
         Debug.Log("calling start");
         // Start hand calibration; the rest of the experiment will follow after calibration is complete
-       StartCoroutine(SetupExperimentCoroutine());
+        StartCoroutine(SetupExperimentCoroutine());
     }
     void ResetHand()
     {
@@ -317,25 +368,25 @@ public class MainExperimentsetup : MonoBehaviour
         yield return StartCoroutine(HandCalibrationCoroutine());
 
         // Step 2: Set up the experiment after calibration
-       
+
         Debug.Log("Setting up experiment...");
         yield return StartCoroutine(ExperimentSetupCoroutine());
-        
+
         // Step 3: Run trials and calculate scaling factors after experiment setup
-        /* Here I ran the code for the scaling factors 
+        //Here I ran the code for the scaling factors 
         Debug.Log("Running trials and computing scaling factors...");
          yield return StartCoroutine(PerformTrialsAndComputeScalingFactors());
-        */
-       
+        
+
         // Step 3: Initialize and start the genetic algorithm after experiment setup
         Debug.Log("Initializing genetic algorithm...");
-        yield return StartCoroutine(InitializeGeneticAlgorithmCoroutine());
+       // yield return StartCoroutine(InitializeGeneticAlgorithmCoroutine());
         setupCompleted = true;
-        yield return StartCoroutine(_ga.RunMultipleTrials(_ga.NumTrials)); // Run trials from MainExperimentsetup
+      // yield return StartCoroutine(_ga.RunMultipleTrials(_ga.NumTrials)); // Run trials from MainExperimentsetup
         Debug.Log("Genetic algorithm completed.");
-        
+
     }
-  
+
     // Coroutine for hand calibration
     private IEnumerator HandCalibrationCoroutine()
     {
@@ -345,9 +396,9 @@ public class MainExperimentsetup : MonoBehaviour
         main_anim.Play("Calibration hand", 0);
 
         //Wait for the animation and calibration process
-        yield return new WaitForSeconds(1.0f);  
+        yield return new WaitForSeconds(1.0f);
         articulationDriver_real.MeasureInitialAngles();
-        yield return new WaitForSeconds(1.0f);  
+        yield return new WaitForSeconds(1.0f);
 
         // Stop the calibration animation
         main_anim.StopPlayback();
@@ -367,8 +418,8 @@ public class MainExperimentsetup : MonoBehaviour
     }
     IEnumerator DelayedSetup()
     {
-        yield return null;  
-                            
+        yield return null;
+
     }
     // Coroutine to set up the experiment after calibration
     private IEnumerator ExperimentSetupCoroutine()
@@ -452,32 +503,24 @@ public class MainExperimentsetup : MonoBehaviour
 
         if (animIndex < 3 && baseCubeFirstTouched) // Lifting trials
         {
-            //Debug.Log($"Recording base cube results for trial {trialIndex} (Lifting)");
             RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, trialIndex, "Lifting", fps);
         }
-        else if (animIndex >= 3 && animIndex < 6 && baseCubeFirstTouched) // Pushing trials
-        {
-            //Debug.Log($"Recording base cube results for trial {trialIndex} (Pushing)");
-            RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, trialIndex, "Pushing", fps);
-        }
-        else if (animIndex >= 6) // Stacking trials
+        else if (animIndex >= 3) // Stacking trials (no longer check for pushing trials)
         {
             if (baseCubeFirstTouched)
             {
-                //Debug.Log($"Recording base cube results for trial {trialIndex} (Stacking)");
                 RecordResults(dataclassBase, cubeReseters[0].transform.position, cubeReseters[0].transform.rotation, wristPos, normedTime, trialIndex, "Stacking_Base", fps);
             }
             if (middleCubeFirstTouched)
             {
-                //Debug.Log($"Recording middle cube results for trial {trialIndex} (Stacking)");
                 RecordResults(dataclassMid, cubeReseters[1].transform.position, cubeReseters[1].transform.rotation, wristPos, normedTime, trialIndex, "Stacking_Middle", fps);
             }
             if (topCubeFirstTouched)
             {
-                //Debug.Log($"Recording top cube results for trial {trialIndex} (Stacking)");
                 RecordResults(dataclassTop, cubeReseters[2].transform.position, cubeReseters[2].transform.rotation, wristPos, normedTime, trialIndex, "Stacking_Top", fps);
             }
         }
+
     }
 
     private float GetScalingFactorForTrial(int animIndex)
@@ -512,33 +555,42 @@ public class MainExperimentsetup : MonoBehaviour
         float trialError = 0f;
         float scalingFactor = GetScalingFactorForTrial(animIndex); // Get the scaling factor based on trial type
 
-        if (animIndex >= 0 && animIndex < 6) // Lifting and Pushing animations
+        if (animIndex >= 0 && animIndex < 3) // Lifting animations
         {
-            string baseCsvKey = csvPaths[animIndex];
-            List<CubeState> baseCubeStates = preprocessedData[baseCsvKey];
-            trialError = CalculateTrialError(dataclassBase, baseCubeStates, scalingFactor, null, null, null, null); // Pass scaling factor
-        }
-        else if (animIndex >= 6) // Stacking animations
-        {
-            string baseCsvKey = csvPaths[6 + (animIndex - 6) * 3];
-            string middleCsvKey = csvPaths[7 + (animIndex - 6) * 3];
-            string topCsvKey = csvPaths[8 + (animIndex - 6) * 3];
+            // For lifting, use the base cube data only
+            string baseCsvKey = csvPaths[animIndex]; // Get the corresponding CSV path for lifting animations
+            List<CubeState> baseCubeStates = preprocessedData[baseCsvKey]; // Fetch preprocessed base cube states
 
+            // Calculate trial error for the lifting trial (only base cube is involved)
+            trialError = CalculateTrialError(dataclassBase, baseCubeStates, scalingFactor, null, null, null, null);
+        }
+        else if (animIndex >= 3 && animIndex < 6) // Stacking animations
+        {
+            // Calculate the correct index for the base, middle, and top CSVs
+            int stackingIndex = animIndex - 3;
+
+            string baseCsvKey = csvPaths[3 + stackingIndex * 3];      // Base cube CSV paths: 3, 6, 9
+            string middleCsvKey = csvPaths[4 + stackingIndex * 3];    // Middle cube CSV paths: 4, 7, 10
+            string topCsvKey = csvPaths[5 + stackingIndex * 3];       // Top cube CSV paths: 5, 8, 11
+
+            // Fetch preprocessed cube states for base, middle, and top cubes
             List<CubeState> baseCubeStates = preprocessedData[baseCsvKey];
             List<CubeState> middleCubeStates = preprocessedData[middleCsvKey];
             List<CubeState> topCubeStates = preprocessedData[topCsvKey];
 
-            trialError = CalculateTrialError(dataclassBase, baseCubeStates, scalingFactor, dataclassMid, middleCubeStates, dataclassTop, topCubeStates); // Pass scaling factor
-            Debug.Log($"Calculated Trial Error for Animation {animation_names[animIndex]}: {trialError}");
+            // Calculate trial error for the stacking trial (involves base, middle, and top cubes)
+            trialError = CalculateTrialError(dataclassBase, baseCubeStates, scalingFactor, dataclassMid, middleCubeStates, dataclassTop, topCubeStates);
 
+            Debug.Log($"Calculated Trial Error for Stacking Animation {animation_names[animIndex]}: {trialError}");
         }
 
         return trialError;
     }
 
+
     private float CalculateTrialError(DataClass baseTrialData, List<CubeState> baseCubeStates, float scalingFactor,
                                       DataClass middleTrialData = null, List<CubeState> middleCubeStates = null,
-                                      DataClass topTrialData = null, List<CubeState> topCubeStates = null) // Accept scaling factor as parameter
+                                      DataClass topTrialData = null, List<CubeState> topCubeStates = null) // Accept scaling factor as parameter we do not have anim index 
     {
         float totalPositionError = 0f;
         float totalRotationError = 0f;
@@ -684,7 +736,7 @@ public class MainExperimentsetup : MonoBehaviour
         // Step 6: Save the data for the current trial (which already clears the lists)
         yield return StartCoroutine(Save(currentTrialNumber, _ga.CurrentGeneration));
         // Step 7: Check if currentTrialNumber exceeds number_of_simulations
-        if (currentTrialNumber +1 >= number_of_simulations)//+1 bc currenttrial goes from 0 
+        if (currentTrialNumber + 1 >= number_of_simulations)//+1 bc currenttrial goes from 0 
         {
             Debug.Log("currentTrialNumber exceeded number_of_simulations, resetting to 0.");
             currentTrialNumber = 0; // Reset to 0 if it exceeds the limit
@@ -781,6 +833,11 @@ public class MainExperimentsetup : MonoBehaviour
     /*we will use default physcis parameters and calculate the average fitness for each of the animations then we will compute the scaling factors based on the average fitness per animation to account for 
      * different difficulty of manipulation
      */
+    public IEnumerator Save_scaling(int trialNumber)
+    {
+        Scaling_SaveDataFile(trialNumber);
+        yield return null;
+    }
     private IEnumerator PerformTrialsAndComputeScalingFactors()
     {
         // Dictionary to store fitness results for each animation
@@ -801,9 +858,11 @@ public class MainExperimentsetup : MonoBehaviour
             for (int trial = 0; trial < 30; trial++)
             {
                 Debug.Log($"Running trial {trial} for animation {animation_names[animIndex]}");
-
+                yield return StartCoroutine(HandCalibrationCoroutine());
+                yield return null; 
                 // Ensure that the trial completes fully before starting the next one
                 yield return StartCoroutine(RunTrialForAnimation(animIndex, animationFitnessData, trial));
+                yield return null; 
                 Debug.Log($"finished trial {trial} ");
             }
 
@@ -826,7 +885,7 @@ public class MainExperimentsetup : MonoBehaviour
 
         // Step 1: Play the animation
         Debug.Log($"Starting animation for trial {currentTrialNumber}, Animation: {animation_names[animIndex]}");
-        //yield return StartCoroutine(PlayAnimationCoroutine(animIndex, currentTrialNumber)); ****************
+        yield return StartCoroutine(PlayAnimationCoroutine(animIndex, currentTrialNumber)); 
 
         // Add a delay to ensure that animation effects have time to settle
         yield return new WaitForSeconds(1.0f);
@@ -846,7 +905,7 @@ public class MainExperimentsetup : MonoBehaviour
 
         // Add a small delay between trials to prevent overlap
         yield return new WaitForSeconds(1.0f);
-        yield return StartCoroutine(Save(currentTrialNumber, _ga.CurrentGeneration));
+        yield return StartCoroutine(Save_scaling(currentTrialNumber));
         yield return StartCoroutine(SetupNext());
         // Increment the current trial number for the next iteration
         currentTrialNumber++;

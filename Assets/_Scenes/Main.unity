@@ -15149,7 +15149,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6087ba5aed500c48b02cb950d197166, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  number_of_simulation_blocks: 10
   articulationPrefab: {fileID: 1416505735874255230, guid: 09c162b73099570458ad56bcde5a3c79, type: 3}
   articulationObject: {fileID: 491124902009685364}
   articulationDriver_real: {fileID: 2468282021287444959}
@@ -15162,9 +15161,6 @@ MonoBehaviour:
   - lift_1
   - lift_2
   - lift_3
-  - push_1
-  - push_2
-  - push_3
   - stack_1
   - stack_2
   - stack_3
@@ -15177,9 +15173,6 @@ MonoBehaviour:
   - Assets/CSVFiles/lift_1_preprocessed.csv
   - Assets/CSVFiles/lift_2_preprocessed.csv
   - Assets/CSVFiles/lift_3_preprocessed.csv
-  - Assets/CSVFiles/push_1_preprocessed.csv
-  - Assets/CSVFiles/push_2_preprocessed.csv
-  - Assets/CSVFiles/push_3_preprocessed.csv
   - Assets/CSVFiles/stack_base_1_preprocessed.csv
   - Assets/CSVFiles/stack_middle_1_preprocessed.csv
   - Assets/CSVFiles/stack_top_1_preprocessed.csv
