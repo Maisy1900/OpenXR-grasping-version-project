@@ -33,6 +33,8 @@ TagManager:
   - tmb_tip
   - Checkpoint
   - RightHandDoNotUse
+  - b_l_middle3
+  - wrist
   layers:
   - Default
   - TransparentFX

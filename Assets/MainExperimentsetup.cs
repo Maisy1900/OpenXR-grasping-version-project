@@ -88,6 +88,7 @@ public class MainExperimentsetup : MonoBehaviour
     DataClass dataclassTop;
     public int number_of_simulation_blocks = 5; // Number of full sets of 9 trials
     private int number_of_simulations;
+    public GameObject articulationPrefab; 
     public GameObject articulationObject;
     public ArticulationDriver_Real articulationDriver_real;
     public Transform cubeObj;
@@ -277,9 +278,33 @@ public class MainExperimentsetup : MonoBehaviour
     #endregion
     void Start()
     {
+        if (articulationPrefab == null)
+        {
+        Debug.LogError("Articulation Prefab is still null at Start.");
+        }
+        else
+        {
+        Debug.Log("Articulation Prefab is correctly assigned at Start.");
+        }
         Debug.Log("calling start");
         // Start hand calibration; the rest of the experiment will follow after calibration is complete
-        StartCoroutine(SetupExperimentCoroutine());
+       StartCoroutine(SetupExperimentCoroutine());
+    }
+    void ResetHand()
+    {
+        if (articulationObject != null)
+            Destroy(articulationObject);
+
+        articulationObject = Instantiate(articulationPrefab);
+
+        // Find the ArticulationDriver_Real component from the newly instantiated object
+        articulationDriver_real = articulationObject.GetComponent<ArticulationDriver_Real>();
+
+        if (articulationDriver_real == null)
+        {
+            Debug.LogError("ArticulationDriver_Real component not found!");
+        }
+        StartCoroutine(DelayedSetup());
     }
 
     #region start coroutine 
@@ -287,44 +312,50 @@ public class MainExperimentsetup : MonoBehaviour
     // Main setup coroutine that runs the whole process in sequence
     private IEnumerator SetupExperimentCoroutine()
     {
-
         // Step 1: Run hand calibration and wait for it to complete
         Debug.Log("Starting hand calibration...");
         yield return StartCoroutine(HandCalibrationCoroutine());
 
         // Step 2: Set up the experiment after calibration
+       
         Debug.Log("Setting up experiment...");
         yield return StartCoroutine(ExperimentSetupCoroutine());
+        
         // Step 3: Run trials and calculate scaling factors after experiment setup
         /* Here I ran the code for the scaling factors 
         Debug.Log("Running trials and computing scaling factors...");
          yield return StartCoroutine(PerformTrialsAndComputeScalingFactors());
         */
-
-
+       
         // Step 3: Initialize and start the genetic algorithm after experiment setup
         Debug.Log("Initializing genetic algorithm...");
         yield return StartCoroutine(InitializeGeneticAlgorithmCoroutine());
         setupCompleted = true;
         yield return StartCoroutine(_ga.RunMultipleTrials(_ga.NumTrials)); // Run trials from MainExperimentsetup
         Debug.Log("Genetic algorithm completed.");
-
+        
     }
-
+  
     // Coroutine for hand calibration
     private IEnumerator HandCalibrationCoroutine()
     {
-        // Step 1: Play calibration animation
+        ResetHand();
+        yield return null;
+        //Play calibration animation
         main_anim.Play("Calibration hand", 0);
 
-        // Step 2: Wait for the animation and calibration process
-        yield return new WaitForSeconds(1.0f);  // Wait for calibration animation
+        //Wait for the animation and calibration process
+        yield return new WaitForSeconds(1.0f);  
         articulationDriver_real.MeasureInitialAngles();
-        yield return new WaitForSeconds(1.0f);  // Wait for measurement to complete
+        yield return new WaitForSeconds(1.0f);  
 
-        // Step 3: Stop the calibration animation
+        // Stop the calibration animation
         main_anim.StopPlayback();
         Debug.Log("Hand calibration completed.");
+
+        main_anim.Play("after calib", 0);
+        yield return new WaitForSeconds(1.0f);
+
         yield return StartCoroutine(ResetPosition());
     }
     private IEnumerator ResetPosition()
@@ -334,7 +365,11 @@ public class MainExperimentsetup : MonoBehaviour
         //Stop the animation
         main_anim.StopPlayback();
     }
-
+    IEnumerator DelayedSetup()
+    {
+        yield return null;  
+                            
+    }
     // Coroutine to set up the experiment after calibration
     private IEnumerator ExperimentSetupCoroutine()
     {
@@ -618,6 +653,7 @@ public class MainExperimentsetup : MonoBehaviour
             yield break; // Stop the coroutine if dataclassBase is not initialized
         }
 
+        yield return StartCoroutine(HandCalibrationCoroutine());
         ResetCubes();
 
         // Step 1: Apply the physics parameters for the trial
@@ -731,6 +767,7 @@ public class MainExperimentsetup : MonoBehaviour
         topCubeFirstTouched = false;
         yield return null;
     }
+
     public IEnumerator Save(int trialNumber, int generationNumber)
     {
         Debug.Log("trialNum : " + _ga.CurrentTrialNumber);

@@ -22,7 +22,7 @@ public class ArticulationDriver_Real : MonoBehaviour
     public ArticulationBody _palmBody;
     public Transform driverHand;
 
-    public Transform[] driverJoints;
+    private Transform[] driverJoints = new Transform[15];
     public ArticulationBody[] articulationBods;
     public Transform driverHandRoot;
     public Vector3 driverHandOffset;
@@ -32,21 +32,43 @@ public class ArticulationDriver_Real : MonoBehaviour
     public Text infoText;
     //public Text angleDisplayText;
 
-    [Range(0f, 50f)]
-    public float xoffset = 15f;
-    [Range(0f, 50f)]
-    public float yoffset = 15f;
+    private string[] finger_tags = new string[] {
+    "b_l_index1",
+    "b_l_index2",
+    "b_l_index3",
+    "b_l_middle1",
+    "b_l_middle2",
+    "b_l_middle3",
+    "b_l_pinky1",
+    "b_l_pinky2",
+    "b_l_pinky3",
+    "b_l_ring1",
+    "b_l_ring2",
+    "b_l_ring3",
+    "b_l_thumb1",
+    "b_l_thumb2",
+    "b_l_thumb3"
+    };
+
+    //[Range(0f, 50f)]
+    //public float xoffset = 15f;
+    //[Range(0f, 50f)]
+    //public float yoffset = 15f;
 
     //offsets
-    [Range(-50f, 50f)] public float[] XOffsets = new float[15];
-    [Range(-50f, 50f)] public float[] YOffsets = new float[15];
-    [Range(-50f, 50f)] public float[] ZOffsets = new float[15];
+    float[] XOffsets = new float[] {-9.4f,0f,0f,-6.4f,0f,0f,10f,0f,0f,-1.5f,0f,0f,13f,0f,0f};
+    float[] YOffsets = new float[] {14f, 0f, 0f, 0.3f,0f,0f, -12.4f, 0f, 0f, -9.4f, 0f, 0f, -6.4f, 0f, 0f };
+    float[] ZOffsets = new float[] {0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, -19.7f, 0f, 0f };
+
+    //[Range(-50f, 50f)] public float[] XOffsets = new float[15];
+    //[Range(-50f, 50f)] public float[] YOffsets = new float[15];
+    //[Range(-50f, 50f)] public float[] ZOffsets = new float[15];
 
     ArticulationBody thisArticulation; // Root-Parent articulation body 
     float xTargetAngle, yTargetAngle = 0f;
 
-    [Range(-90f, 90f)]
-    public float angle = 0f;
+    //[Range(-90f, 90f)]
+    //public float angle = 0f;
 
     float[] initialXAngles = new float[15];
     float[] initialYAngles = new float[15];
@@ -60,6 +82,8 @@ public class ArticulationDriver_Real : MonoBehaviour
         //    initialYAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.y;
         //    initialZAngles[k] = driverJoints[k].transform.localRotation.eulerAngles.z;
         //}
+
+        // driverJoints = new Transform[15];
 
         int k = 0;
         foreach (Transform jointTF in driverJoints)
@@ -75,8 +99,74 @@ public class ArticulationDriver_Real : MonoBehaviour
 
     void Start()
     {
+        // Initialize this articulation body
         thisArticulation = GetComponent<ArticulationBody>();
+
+        // Ensure driverHand is assigned
+        if (driverHand == null)
+        {
+            GameObject wristObject = GameObject.FindWithTag("wrist");
+            if (wristObject != null)
+            {
+                driverHand = wristObject.transform;
+                driverHandRoot = wristObject.transform;
+                Debug.Log("Driver Hand and Driver Hand Root assigned using the 'Wrist' tag.");
+            }
+            else
+            {
+                Debug.LogError("Driver Hand with the 'Wrist' tag not found! Ensure the tag is correctly assigned in the Inspector.");
+            }
+        }
+
+        // Ensure articulationBods array is assigned and populated
+        if (articulationBods == null || articulationBods.Length == 0)
+        {
+            // Automatically assign all ArticulationBody components in the children of this object
+            articulationBods = GetComponentsInChildren<ArticulationBody>();
+            if (articulationBods == null || articulationBods.Length == 0)
+            {
+                Debug.LogError("Articulation Bodies not found! Ensure they are correctly assigned in the hierarchy.");
+            }
+        }
+
+        // Ensure the palm body (_palmBody) is assigned
+        if (_palmBody == null)
+        {
+            _palmBody = GetComponent<ArticulationBody>();
+            if (_palmBody == null)
+            {
+                Debug.LogError("_palmBody is not assigned and could not be found on this GameObject.");
+            }
+        }
+
+        // Ensure infoText is assigned
+        if (infoText == null)
+        {
+            // Try to find any Text component in the scene (you may want to search by tag or specific name)
+            infoText = GameObject.FindObjectOfType<Text>();
+            if (infoText == null)
+            {
+                Debug.LogError("Info Text not found! Make sure a UI Text element is assigned or available in the scene.");
+            }
+        }
+
+        // Assign driver joints based on the finger tags
+        int k = 0;
+        foreach (string finger_tag in finger_tags)
+        {
+            GameObject joint = GameObject.FindWithTag(finger_tag);
+            if (joint != null)
+            {
+                driverJoints[k] = joint.GetComponent<Transform>();
+            }
+            else
+            {
+                Debug.LogError($"Joint with tag {finger_tag} not found! Make sure the tags are correctly set in the scene.");
+            }
+            k++;
+        }
     }
+
 
     void FixedUpdate()
     {
