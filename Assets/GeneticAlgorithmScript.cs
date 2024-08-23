@@ -60,8 +60,8 @@ public class GeneticAlgorithmScript : MonoBehaviour
         for (int i = 0; i < _populationSize; i++)
         {
             Chromosome chromosome = new Chromosome(
-                lowerBounds: new double[] { 3, 5, 0.001, 0.01, 0.1 },
-                upperBounds: new double[] { 30, 30, 0.1, 2, 4 }
+                lowerBounds: new double[] { 20, 10, 0.0085, 0.0000005, 0.0005 },
+                upperBounds: new double[] { 90, 60, 0.065, 0.007, 4 }
             );
             _population.Add(chromosome);
         }

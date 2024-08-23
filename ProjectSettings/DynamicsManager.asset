@@ -6,15 +6,15 @@ PhysicsManager:
   serializedVersion: 14
   m_Gravity: {x: 0, y: -9.81, z: 0}
   m_DefaultMaterial: {fileID: 0}
-  m_BounceThreshold: 0.1
-  m_DefaultMaxDepenetrationVelocity: 10
+  m_BounceThreshold: 1
+  m_DefaultMaxDepenetrationVelocity: 0.005
   m_SleepThreshold: 0.005
-  m_DefaultContactOffset: 0.01
-  m_DefaultSolverIterations: 20
-  m_DefaultSolverVelocityIterations: 8
+  m_DefaultContactOffset: 0.001
+  m_DefaultSolverIterations: 60
+  m_DefaultSolverVelocityIterations: 30
   m_QueriesHitBackfaces: 0
   m_QueriesHitTriggers: 1
-  m_EnableAdaptiveForce: 0
+  m_EnableAdaptiveForce: 1
   m_ClothInterCollisionDistance: 0
   m_ClothInterCollisionStiffness: 0
   m_ContactsGeneration: 1

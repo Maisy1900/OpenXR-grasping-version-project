@@ -374,15 +374,15 @@ public class MainExperimentsetup : MonoBehaviour
 
         // Step 3: Run trials and calculate scaling factors after experiment setup
         //Here I ran the code for the scaling factors 
-        Debug.Log("Running trials and computing scaling factors...");
-         yield return StartCoroutine(PerformTrialsAndComputeScalingFactors());
+        //Debug.Log("Running trials and computing scaling factors...");
+       // yield return StartCoroutine(PerformTrialsAndComputeScalingFactors());
         
 
         // Step 3: Initialize and start the genetic algorithm after experiment setup
         Debug.Log("Initializing genetic algorithm...");
-       // yield return StartCoroutine(InitializeGeneticAlgorithmCoroutine());
+        yield return StartCoroutine(InitializeGeneticAlgorithmCoroutine());
         setupCompleted = true;
-      // yield return StartCoroutine(_ga.RunMultipleTrials(_ga.NumTrials)); // Run trials from MainExperimentsetup
+       yield return StartCoroutine(_ga.RunMultipleTrials(_ga.NumTrials)); // Run trials from MainExperimentsetup
         Debug.Log("Genetic algorithm completed.");
 
     }
@@ -528,23 +528,17 @@ public class MainExperimentsetup : MonoBehaviour
         switch (animIndex)
         {
             case 0: // lift_1
-                return 1.996766f;
+                return 8.213102541f;
             case 1: // lift_2
-                return 4.611262f;
-            case 2: // lift_3
                 return 1f;
+            case 2: // lift_3
+                return 2.508963971f;
             case 3: // push_1
-                return 26.47587f;
+                return 7.883310343f;
             case 4: // push_2
-                return 43.51072f;
+                return 4.371976576f;
             case 5: // push_3
-                return 84.12691f;
-            case 6: // stack_1
-                return 23.00733f;
-            case 7: // stack_2
-                return 39.56506f;
-            case 8: // stack_3
-                return 21.51627f;
+                return 10.07394175f;
             default:
                 return 1f; // Default scaling factor if animIndex is out of range
         }
