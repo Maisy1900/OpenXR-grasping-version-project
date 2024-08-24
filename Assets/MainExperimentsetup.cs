@@ -791,7 +791,7 @@ public class MainExperimentsetup : MonoBehaviour
         else
         {
             // Assign maximum fitness (1.0) if FPS is above 90
-            fitness = 1.0f;
+            fitness = 0f;
             Debug.Log("FPS is above 90. Assigning max fitness of 1.0.");
             yield return null;
         }
