@@ -447,7 +447,7 @@ public class MainExperimentsetup : MonoBehaviour
     private IEnumerator InitializeGeneticAlgorithmCoroutine()
     {
         // Step 1: Initialize the genetic algorithm
-        _ga = new GeneticAlgorithmScript(this, populationSize: 20, numberOfGenerations: 30, crossoverProbability: 0.7f, mutationProbability: 0.05f);
+        _ga = new GeneticAlgorithmScript(this, populationSize: 20, numberOfGenerations: 30, crossoverProbability: 0.9f, mutationProbability: 0.05f);
         //_ga = new GeneticAlgorithmScript(this, populationSize: 10, numberOfGenerations: 50, crossoverProbability: 0.8f, mutationProbability: 0.05f);
 
         // Step 2: Calculate total number of simulations and shuffle animations
@@ -757,7 +757,7 @@ public class MainExperimentsetup : MonoBehaviour
         // Output the results
 
         // Check if the average FPS is below 90 and return the appropriate boolean value
-        if (averageFps < 90)
+        if (averageFps < 70)
         {
             return false; // FPS is below 90, return false
         }

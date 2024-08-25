@@ -26,7 +26,7 @@ public class GeneticAlgorithmScript : MonoBehaviour
     private int _numberOfRuns;
     private int _generationsWithoutImprovement = 0; // Track consecutive generations without improvement
 
-    public int NumTrials { get; set; } = 4; // Default to 5 trials, can be set externally
+    public int NumTrials { get; set; } = 5; // Default to 5 trials, can be set externally
     public int CurrentTrialNumber { get; private set; }
 
     public GeneticAlgorithmScript(MainExperimentsetup experimentSetup, int populationSize, int numberOfGenerations, float crossoverProbability, float mutationProbability)
@@ -92,9 +92,9 @@ public class GeneticAlgorithmScript : MonoBehaviour
 
             // Save trial and generation data for this trial
             Debug.Log($"Saving trial data for Trial {trial}...");
-            SaveTrialDataToCSV(_trialNumber);
+            SaveTrialDataToCSV(CurrentTrialNumber);
             yield return null;
-            SaveGenerationDataToCSV(_trialNumber);
+            SaveGenerationDataToCSV(CurrentTrialNumber);
             yield return null;
 
             Debug.Log($"Trial {trial} completed and data saved.");
@@ -115,8 +115,6 @@ public class GeneticAlgorithmScript : MonoBehaviour
             // Step 1: Evaluate population fitness
             yield return EvaluatePopulationFitness();
 
-            
-
             // Step 3: Selection
             List<Chromosome> newPopulation = TournamentSelection();
             yield return null; // Ensure this runs smoothly across frames
@@ -134,7 +132,7 @@ public class GeneticAlgorithmScript : MonoBehaviour
             yield return null;
 
             // Step 7: Save generation statistics and trial data
-           // CalculateAndStoreGenerationStatistics(generation);
+            CalculateAndStoreGenerationStatistics(generation);
 
             yield return null;
             SaveGenerationDataToCSV(_trialNumber);  // Pass the trial number
@@ -322,6 +320,38 @@ public class GeneticAlgorithmScript : MonoBehaviour
      * go through the chromosomes for the population, for that generation 
      * 
      */
+    private void CalculateAndStoreGenerationStatistics(int generation)
+    {
+        if (_population == null || _population.Count == 0)
+        {
+            Debug.LogError("Population is empty. Cannot calculate generation statistics.");
+            return;
+        }
+
+        // Get the best, average, worst, and standard deviation of fitness in the population
+        float bestFitness = _population.Max(c => c.Fitness);
+        float worstFitness = _population.Min(c => c.Fitness);
+        float averageFitness = _population.Average(c => c.Fitness);
+        float stdDevFitness = Mathf.Sqrt(_population.Sum(c => Mathf.Pow(c.Fitness - averageFitness, 2)) / _population.Count);
+
+        // Find the chromosome with the best fitness
+        Chromosome bestChromosome = _population.First(c => c.Fitness == bestFitness);
+
+        // Convert the best parameters to float[]
+        float[] bestParameters = bestChromosome.Genes.Select(g => (float)g).ToArray();
+
+        // Store the generation statistics
+        _generationData.Add(new GenerationData(
+            generation,
+            bestFitness,
+            averageFitness,
+            stdDevFitness,
+            worstFitness,
+            bestParameters
+        ));
+
+        Debug.Log($"Generation {generation} - Best Fitness: {bestFitness}, Avg Fitness: {averageFitness}, StdDev: {stdDevFitness}, Worst Fitness: {worstFitness}");
+    }
 
 
     private void SaveGenerationDataToCSV(int trialNumber)
@@ -338,9 +368,13 @@ public class GeneticAlgorithmScript : MonoBehaviour
         // Define the file name and path
         string filePath = Path.Combine(directoryPath, "GenerationStats.csv");
 
-        using (StreamWriter writer = new StreamWriter(filePath))
+        using (StreamWriter writer = new StreamWriter(filePath, append: true)) // Use append to keep adding data
         {
-            writer.WriteLine("Generation,BestFitness,AverageFitness,StdDevFitness,WorstFitness,BestParameters");
+            if (new FileInfo(filePath).Length == 0)
+            {
+                // Write the header if the file is empty (first write)
+                writer.WriteLine("Generation,BestFitness,AverageFitness,StdDevFitness,WorstFitness,BestParameters");
+            }
 
             foreach (var data in _generationData)
             {
